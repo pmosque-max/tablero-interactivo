@@ -3,339 +3,453 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Previsualización UI Canvas - Tablero Interactivo</title>
+  <title>EduBoard - Tablero Virtual Interactivo</title>
   <style>
     :root {
-      --bg-page: #0f172a;
-      --card-bg: #1e293b;
-      --text: #f8fafc;
-      --accent: #38bdf8;
+      --bg-frame: #0f172a;        /* Marco exterior oscuro elegante */
+      --toolbar-bg: #1e293b;     /* Barra de herramientas */
+      --border-color: #334155;
+      --board-bg: #ffffff;        /* TABLERO BLANCO */
+      --board-text: #0f172a;      /* Texto oscuro legible */
+      --primary: #2563eb;
+      --accent: #059669;
+      --danger: #dc2626;
+      --panel-bg: #1e293b;
+      --panel-text: #f8fafc;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
 
     body {
-      background-color: var(--bg-page);
-      color: var(--text);
+      background-color: var(--bg-frame);
+      color: var(--panel-text);
       display: flex;
       flex-direction: column;
-      align-items: center;
-      padding: 20px;
-      min-height: 100vh;
+      height: 100vh;
+      overflow: hidden;
     }
 
-    h1 {
-      font-size: 1.5rem;
-      color: var(--accent);
-      margin-bottom: 6px;
-    }
-
-    p.subtitle {
-      font-size: 0.9rem;
-      color: #94a3b8;
-      margin-bottom: 16px;
-      text-align: center;
-    }
-
-    .canvas-card {
-      background: var(--card-bg);
-      border: 1px solid #334155;
-      border-radius: 12px;
-      padding: 16px;
-      box-shadow: 0 10px 25px -5px rgba(0,0,0,0.5);
+    /* Barra Superior del Sistema */
+    header {
+      background: #090d16;
+      padding: 10px 20px;
       display: flex;
-      flex-direction: column;
+      justify-content: space-between;
       align-items: center;
-      gap: 14px;
+      border-bottom: 1px solid var(--border-color);
     }
 
-    canvas {
-      border: 2px solid #475569;
-      border-radius: 8px;
-      background: #000;
-      max-width: 100%;
-      height: auto;
-    }
-
-    .palette-legend {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      justify-content: center;
-      max-width: 900px;
-      margin-top: 8px;
-    }
-
-    .color-swatch {
+    .brand-title {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #38bdf8;
       display: flex;
       align-items: center;
       gap: 8px;
-      font-size: 0.8rem;
-      background: #0f172a;
-      padding: 6px 12px;
-      border-radius: 6px;
-      border: 1px solid #334155;
     }
 
-    .swatch-box {
-      width: 18px;
-      height: 18px;
-      border-radius: 4px;
-      border: 1px solid rgba(255,255,255,0.2);
+    .top-actions {
+      display: flex;
+      gap: 10px;
+      align-items: center;
     }
+
+    button, select, input {
+      padding: 7px 12px;
+      border-radius: 6px;
+      border: 1px solid var(--border-color);
+      font-size: 0.85rem;
+      cursor: pointer;
+    }
+
+    /* Disposición Principal: Pizarra Blanca (75%) + Panel Curricular (25%) */
+    main {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 16px;
+      padding: 16px;
+      overflow: hidden;
+    }
+
+    .board-container {
+      background: var(--toolbar-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+    }
+
+    /* Barra de Herramientas de la Pizarra */
+    .board-toolbar {
+      background: var(--toolbar-bg);
+      padding: 10px 14px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .tool-group {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      border-right: 1px solid var(--border-color);
+      padding-right: 8px;
+    }
+
+    .btn-tool {
+      background: #334155;
+      color: white;
+      border: none;
+      font-weight: 600;
+    }
+    .btn-tool:hover { background: #475569; }
+
+    .btn-mic {
+      background: var(--primary);
+      color: white;
+      border: none;
+      font-weight: bold;
+    }
+    .btn-mic.listening { background: var(--danger); animation: pulse 1.5s infinite; }
+
+    /* EL LIENZO BLANCO DEL TABLERO */
+    .whiteboard-sheet {
+      flex: 1;
+      background: var(--board-bg);
+      color: var(--board-text);
+      padding: 30px;
+      overflow-y: auto;
+      outline: none;
+      font-size: 1.2rem;
+      line-height: 1.8;
+      box-shadow: inset 0 0 15px rgba(0,0,0,0.03);
+    }
+
+    /* Títulos dentro del tablero */
+    .whiteboard-sheet h1 { font-size: 2.2rem; color: #1e3a8a; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; }
+    .whiteboard-sheet h2 { font-size: 1.6rem; color: #0f172a; margin-top: 16px; margin-bottom: 8px; }
+    .whiteboard-sheet p { margin-bottom: 12px; }
+
+    /* Notas Adhesivas en el Tablero */
+    .sticky-note {
+      background: #fef08a;
+      color: #854d0e;
+      border-left: 6px solid #eab308;
+      padding: 12px;
+      border-radius: 6px;
+      margin: 12px 0;
+      font-size: 1rem;
+      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.08);
+    }
+
+    /* Dock Inferior de Recursos Multimedia */
+    .media-dock {
+      background: #0f172a;
+      border-top: 1px solid var(--border-color);
+      padding: 10px 14px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      overflow-x: auto;
+    }
+
+    .dock-card {
+      min-width: 100px;
+      height: 70px;
+      background: #1e293b;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      cursor: pointer;
+      user-select: none;
+    }
+    .dock-card:hover { border-color: #38bdf8; color: white; }
+
+    /* Panel Lateral de Asignaturas & Evaluación */
+    aside.side-panel {
+      background: var(--panel-bg);
+      border: 2px solid var(--border-color);
+      border-radius: 12px;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+    }
+
+    .panel-tabs {
+      display: flex;
+      background: #0f172a;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .tab-item {
+      flex: 1;
+      padding: 10px 6px;
+      text-align: center;
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: #94a3b8;
+      cursor: pointer;
+      border-bottom: 2px solid transparent;
+    }
+    .tab-item.active { color: #38bdf8; border-color: #38bdf8; background: var(--panel-bg); }
+
+    .panel-body {
+      flex: 1;
+      padding: 16px;
+      overflow-y: auto;
+      font-size: 0.9rem;
+    }
+
+    .preset-chip {
+      background: #334155;
+      padding: 8px 10px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .preset-chip:hover { background: #475569; }
+
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
   </style>
 </head>
 <body>
 
-  <h1>Esquema de Color y Composición Visual (UI Canvas)</h1>
-  <p class="subtitle">Maquetación gráfica generada sobre Canvas HTML5 para evaluar jerarquía visual, contraste y distribución ergonómica.</p>
-
-  <div class="canvas-card">
-    <!-- Lienzo de renderizado de la UI (Resolución base 1000x620) -->
-    <canvas id="uiCanvas" width="1000" height="620"></canvas>
-
-    <!-- Muestrario de la paleta cromática -->
-    <div class="palette-legend">
-      <div class="color-swatch">
-        <div class="swatch-box" style="background: #1e293b;"></div>
-        <span>Lienzo Pizarra (#1E293B)</span>
-      </div>
-      <div class="color-swatch">
-        <div class="swatch-box" style="background: #2563eb;"></div>
-        <span>Primario / Botones (#2563EB)</span>
-      </div>
-      <div class="color-swatch">
-        <div class="swatch-box" style="background: #059669;"></div>
-        <span>Acento / Éxito (#059669)</span>
-      </div>
-      <div class="color-swatch">
-        <div class="swatch-box" style="background: #f8fafc;"></div>
-        <span>Texto / Contraste (#F8FAFC)</span>
-      </div>
-      <div class="color-swatch">
-        <div class="swatch-box" style="background: #334155;"></div>
-        <span>Bordes / Paneles (#334155)</span>
-      </div>
-      <div class="color-swatch">
-        <div class="swatch-box" style="background: #ea580c;"></div>
-        <span>Alerta / Speaking (#EA580C)</span>
-      </div>
+  <!-- ENCABEZADO -->
+  <header>
+    <div class="brand-title">
+      <span>📐 EduBoard Classroom</span>
+      <span style="font-size: 0.75rem; color: #94a3b8; font-weight: normal;">| I.E. Jorge Eliécer Gaitán</span>
     </div>
-  </div>
+    <div class="top-actions">
+      <select id="uiLang">
+        <option value="en-US">Audio: English (US)</option>
+        <option value="es-CO">Audio: Español (CO)</option>
+      </select>
+      <button style="background: var(--accent); color:white; border:none; font-weight:bold;" onclick="exportNotes()">📄 Descargar Apuntes</button>
+    </div>
+  </header>
+
+  <!-- CUERPO PRINCIPAL -->
+  <main>
+    <!-- TABLERO BLANCO CENTRAL -->
+    <section class="board-container">
+      <div class="board-toolbar">
+        <!-- Entrada de Voz -->
+        <div class="tool-group">
+          <button class="btn-mic" id="btnMic" onclick="toggleSpeech()">🎤 Dictar por Voz</button>
+          <button class="btn-tool" onclick="speakSelection()">🔊 Escuchar Selección</button>
+        </div>
+
+        <!-- Formatos de Texto -->
+        <div class="tool-group">
+          <select onchange="formatHeading(this.value)">
+            <option value="p">Texto Normal</option>
+            <option value="h1">Título Grande (H1)</option>
+            <option value="h2">Subtítulo (H2)</option>
+          </select>
+
+          <select onchange="changeFont(this.value)">
+            <option value="system-ui">Sans-Serif (Limpia)</option>
+            <option value="Georgia">Serif (Formal)</option>
+            <option value="'Courier New', monospace">Monospace (Código)</option>
+          </select>
+
+          <!-- Marcadores de Color -->
+          <input type="color" id="penColor" value="#0f172a" title="Color del Marcador" onchange="changeColor(this.value)">
+        </div>
+
+        <!-- Insertar Estructuras -->
+        <div class="tool-group">
+          <button class="btn-tool" onclick="insertNote()">📌 Nota</button>
+          <button class="btn-tool" onclick="insertTable()">📊 Tabla</button>
+        </div>
+
+        <button style="background: #e2e8f0; color:#334155; margin-left: auto;" onclick="clearBoard()">Limpiar</button>
+      </div>
+
+      <!-- ÁREA EDITABLE DEL TABLERO BLANCO -->
+      <div id="whiteboard" class="whiteboard-sheet" contenteditable="true" spellcheck="false">
+        <h1>Comparative & Superlative Adjectives</h1>
+        <p>In this lesson, we will describe animals using comparisons:</p>
+        <div class="sticky-note">
+          <strong>Key Rule:</strong> Short adjectives add <em>-er than</em> (tall -> taller than). Long adjectives use <em>more ... than</em>.
+        </div>
+        <p>1. The lion is faster than the elephant.</p>
+        <p>2. The giraffe is the tallest animal in the savanna.</p>
+      </div>
+
+      <!-- DOCK MULTIMEDIA INFERIOR -->
+      <div class="media-dock">
+        <div class="dock-card" onclick="insertSampleMedia('🦁 Lion')">🦁 Imagen León</div>
+        <div class="dock-card" onclick="insertSampleMedia('🐘 Elephant')">🐘 Imagen Elefante</div>
+        <div class="dock-card" onclick="insertSampleMedia('🦒 Giraffe')">🦒 Imagen Jirafa</div>
+        <div class="dock-card" onclick="document.getElementById('fileLoader').click()">➕ Subir Archivo</div>
+        <input type="file" id="fileLoader" style="display:none;" onchange="handleFileUpload(event)">
+      </div>
+    </section>
+
+    <!-- BARRA LATERAL: ASIGNATURAS Y EVALUACIÓN -->
+    <aside class="side-panel">
+      <div class="panel-tabs">
+        <div class="tab-item active" onclick="switchSideTab(0)">Inglés</div>
+        <div class="tab-item" onclick="switchSideTab(1)">Español</div>
+        <div class="tab-item" onclick="switchSideTab(2)">Artes</div>
+        <div class="tab-item" onclick="switchSideTab(3)">Tecnología</div>
+      </div>
+
+      <div class="panel-body" id="panelContent">
+        <!-- Contenido dinámico cargado por JavaScript -->
+      </div>
+    </aside>
+  </main>
 
   <script>
-    const canvas = document.getElementById('uiCanvas');
-    const ctx = canvas.getContext('2d');
+    const board = document.getElementById('whiteboard');
 
-    // Paleta de diseño accesible y ergonómico
-    const colors = {
-      headerBg: '#0f172a',
-      boardBg: '#1e293b',
-      panelBg: '#0f172a',
-      cardBg: '#1e293b',
-      border: '#334155',
-      primaryBtn: '#2563eb',
-      voiceBtn: '#dc2626',
-      accentBtn: '#059669',
-      tagBg: '#38bdf8',
-      textLight: '#f8fafc',
-      textMuted: '#94a3b8',
-      gold: '#f59e0b'
-    };
+    // 1. RECONOCIMIENTO DE VOZ (DICTADO)
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+    let recognizer;
+    let isListening = false;
 
-    function drawInterface() {
-      // Fondo general
-      ctx.fillStyle = '#0b1120';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
+    if (SpeechRecognition) {
+      recognizer = new SpeechRecognition();
+      recognizer.continuous = true;
+      recognizer.interimResults = false;
 
-      // 1. HEADER / BARRA SUPERIOR (y: 0 a 55)
-      ctx.fillStyle = colors.headerBg;
-      ctx.fillRect(0, 0, canvas.width, 55);
-      ctx.strokeStyle = colors.border;
-      ctx.lineWidth = 1;
-      ctx.strokeRect(0, 0, canvas.width, 55);
+      recognizer.onstart = () => {
+        isListening = true;
+        const btn = document.getElementById('btnMic');
+        btn.innerText = "⏹️ Detener";
+        btn.classList.add('listening');
+      };
 
-      // Logo / Título
-      ctx.fillStyle = colors.tagBg;
-      ctx.font = 'bold 16px sans-serif';
-      ctx.fillText('📐 EduBoard Workspace (Multimodal & CLIL)', 20, 34);
+      recognizer.onresult = (e) => {
+        const text = e.results[e.results.length - 1][0].transcript;
+        document.execCommand('insertText', false, ' ' + text);
+      };
 
-      // Botones del Header (Modos DUA/PIAR, Idioma, Exportar)
-      drawButton(520, 12, 110, 30, colors.border, 'Modo: DUA / PIAR');
-      drawButton(645, 12, 90, 30, colors.border, '🌐 Idioma: EN/ES');
-      drawButton(750, 12, 110, 30, colors.accentBtn, '💾 Guardar Sheets');
-      drawButton(875, 12, 105, 30, colors.primaryBtn, '📤 Exportar PDF');
-
-      // 2. CONTENEDOR CENTRAL: PIZARRA DIGITAL (x: 20, y: 70, w: 680, h: 530)
-      ctx.fillStyle = colors.boardBg;
-      roundRect(ctx, 20, 70, 680, 530, 8, true, true);
-
-      // Toolbar de la Pizarra
-      ctx.fillStyle = '#172554';
-      ctx.fillRect(21, 71, 678, 42);
-      ctx.strokeStyle = colors.border;
-      ctx.beginPath();
-      ctx.moveTo(20, 113);
-      ctx.lineTo(700, 113);
-      ctx.stroke();
-
-      // Botones de acción directa en la pizarra
-      drawButton(30, 78, 120, 28, colors.voiceBtn, '🎤 Dictar (Voz)');
-      drawButton(160, 78, 110, 28, colors.primaryBtn, '🔊 Leer (TTS)');
-      drawButton(280, 78, 70, 28, '#475569', 'Fuente ▼');
-      drawButton(360, 78, 80, 28, '#475569', 'Formas ▼');
-      drawButton(450, 78, 85, 28, '#475569', '📁 Subir Doc');
-
-      // Área de Escritura / Canvas de Pizarra
-      ctx.fillStyle = colors.textLight;
-      ctx.font = 'bold 22px sans-serif';
-      ctx.fillText('Today\'s Topic: Comparative & Superlative Structures', 40, 150);
-
-      ctx.fillStyle = colors.tagBg;
-      ctx.font = '16px sans-serif';
-      ctx.fillText('Grammar Pattern: [Subject] + [Verb] + [Adjective + -er] + than + [Object]', 40, 185);
-
-      ctx.fillStyle = colors.textLight;
-      ctx.font = '15px sans-serif';
-      ctx.fillText('1. "The lion is bigger than the dog."', 40, 220);
-      ctx.fillText('2. "The elephant is the heaviest animal in the savanna."', 40, 250);
-
-      // Demostración de Objeto / Figura en Pizarra
-      ctx.strokeStyle = colors.gold;
-      ctx.lineWidth = 2;
-      ctx.strokeRect(40, 280, 240, 80);
-      ctx.fillStyle = 'rgba(245, 158, 11, 0.1)';
-      ctx.fillRect(40, 280, 240, 80);
-      ctx.fillStyle = colors.gold;
-      ctx.font = 'bold 13px sans-serif';
-      ctx.fillText('Structure Box (Visual Anchor)', 55, 305);
-      ctx.font = '12px sans-serif';
-      ctx.fillText('Adjective -> Comparative -> Superlative', 55, 330);
-
-      // Dock Inferior de Recursos Multimedia / Scaffolding (y: 470 a 590)
-      ctx.fillStyle = '#0b1329';
-      ctx.fillRect(21, 470, 678, 129);
-      ctx.strokeStyle = colors.border;
-      ctx.strokeRect(21, 470, 678, 129);
-
-      ctx.fillStyle = colors.textMuted;
-      ctx.font = 'bold 12px sans-serif';
-      ctx.fillText('DOCK DE RECURSOS & MEDIA (Arrastrar o Clic para insertar)', 35, 490);
-
-      // Tarjetas miniatura en el Dock
-      drawMediaCard(35, 502, 100, 85, '🦁 Lion (Img)');
-      drawMediaCard(145, 502, 100, 85, '🐘 Elephant (Img)');
-      drawMediaCard(255, 502, 100, 85, '📄 Summary.pdf');
-      drawMediaCard(365, 502, 100, 85, '🎬 Video_CLIL.mp4');
-
-      // 3. BARRA LATERAL DERECHA: ACTIVIDADES & EVALUACIÓN (x: 715, y: 70, w: 265, h: 530)
-      ctx.fillStyle = colors.panelBg;
-      roundRect(ctx, 715, 70, 265, 530, 8, true, true);
-
-      // Pestañas del Panel
-      ctx.fillStyle = '#1e293b';
-      ctx.fillRect(716, 71, 263, 38);
-      ctx.fillStyle = colors.tagBg;
-      ctx.font = 'bold 12px sans-serif';
-      ctx.fillText('English', 730, 95);
-      ctx.fillStyle = colors.textMuted;
-      ctx.fillText('Español', 785, 95);
-      ctx.fillText('Artes', 845, 95);
-      ctx.fillText('Tecnología', 895, 95);
-
-      // Submódulo: Evaluación de Oraciones (Speaking & Writing)
-      ctx.fillStyle = colors.textLight;
-      ctx.font = 'bold 14px sans-serif';
-      ctx.fillText('Classroom Assessment', 730, 135);
-
-      ctx.fillStyle = colors.textMuted;
-      ctx.font = '12px sans-serif';
-      ctx.fillText('Oral Production Challenge:', 730, 160);
-
-      // Caja de Oración Target
-      ctx.fillStyle = '#1e293b';
-      roundRect(ctx, 730, 172, 235, 55, 6, true, true);
-      ctx.fillStyle = colors.tagBg;
-      ctx.font = 'italic 12px sans-serif';
-      ctx.fillText('"The cheetah runs faster than the zebra."', 738, 195);
-      ctx.fillText('Target CEFR: A2', 738, 215);
-
-      drawButton(730, 238, 235, 32, colors.primaryBtn, '🎙️ Evaluar Pronunciación');
-
-      // Feedback Score
-      ctx.fillStyle = 'rgba(5, 150, 105, 0.2)';
-      roundRect(ctx, 730, 280, 235, 45, 6, true, false);
-      ctx.fillStyle = colors.accentBtn;
-      ctx.font = 'bold 12px sans-serif';
-      ctx.fillText('Speech Accuracy: 94%', 745, 300);
-      ctx.font = '11px sans-serif';
-      ctx.fillText('Fluency & Syntax: Target matched', 745, 316);
-
-      // Submódulo: Lista de Participación en Vivo
-      ctx.fillStyle = colors.textLight;
-      ctx.font = 'bold 13px sans-serif';
-      ctx.fillText('Live Participation Tracker', 730, 355);
-
-      drawStudentRow(730, 370, 'Student A', 'Score: 4/4', '✅ Oral Checked');
-      drawStudentRow(730, 420, 'Student B', 'Score: 3/4', '✅ Written Checked');
-      drawStudentRow(730, 470, 'Student C', 'Score: --', '⏳ Pending Action');
-
-      // Botón Sincronizar Base de Datos
-      drawButton(730, 545, 235, 36, '#2563eb', 'Sync with Database');
+      recognizer.onend = () => {
+        isListening = false;
+        const btn = document.getElementById('btnMic');
+        btn.innerText = "🎤 Dictar por Voz";
+        btn.classList.remove('listening');
+      };
     }
 
-    // Funciones auxiliares de dibujo
-    function drawButton(x, y, w, h, bg, text) {
-      ctx.fillStyle = bg;
-      roundRect(ctx, x, y, w, h, 6, true, false);
-      ctx.fillStyle = '#ffffff';
-      ctx.font = 'bold 11px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(text, x + w / 2, y + h / 2 + 4);
-      ctx.textAlign = 'left';
+    function toggleSpeech() {
+      if (!recognizer) {
+        alert("Tu navegador no soporta reconocimiento de voz nativo. Utiliza Chrome o Edge.");
+        return;
+      }
+      recognizer.lang = document.getElementById('uiLang').value;
+      if (!isListening) recognizer.start();
+      else recognizer.stop();
     }
 
-    function drawMediaCard(x, y, w, h, label) {
-      ctx.fillStyle = '#1e293b';
-      ctx.strokeStyle = colors.border;
-      roundRect(ctx, x, y, w, h, 6, true, true);
-      ctx.fillStyle = colors.textLight;
-      ctx.font = '11px sans-serif';
-      ctx.textAlign = 'center';
-      ctx.fillText(label, x + w / 2, y + h / 2 + 4);
-      ctx.textAlign = 'left';
+    // 2. SÍNTESIS DE VOZ (TEXT-TO-SPEECH)
+    function speakSelection() {
+      const selectedText = window.getSelection().toString().trim() || board.innerText;
+      if (!selectedText) return;
+      window.speechSynthesis.cancel();
+      const utterance = new SpeechSynthesisUtterance(selectedText);
+      utterance.lang = document.getElementById('uiLang').value;
+      window.speechSynthesis.speak(utterance);
     }
 
-    function drawStudentRow(x, y, name, score, status) {
-      ctx.fillStyle = '#1e293b';
-      roundRect(ctx, x, y, 235, 42, 4, true, false);
-      ctx.fillStyle = colors.textLight;
-      ctx.font = 'bold 11px sans-serif';
-      ctx.fillText(name, x + 8, y + 16);
-      ctx.font = '10px sans-serif';
-      ctx.fillStyle = colors.textMuted;
-      ctx.fillText(score, x + 8, y + 32);
-      ctx.fillStyle = colors.tagBg;
-      ctx.fillText(status, x + 120, y + 24);
+    // 3. HERRAMIENTAS DE FORMATO
+    function formatHeading(tag) {
+      document.execCommand('formatBlock', false, tag);
     }
 
-    function roundRect(ctx, x, y, width, height, radius, fill, stroke) {
-      ctx.beginPath();
-      ctx.moveTo(x + radius, y);
-      ctx.lineTo(x + width - radius, y);
-      ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-      ctx.lineTo(x + width, y + height - radius);
-      ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-      ctx.lineTo(x + radius, y + height);
-      ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-      ctx.lineTo(x, y + radius);
-      ctx.quadraticCurveTo(x, y, x + radius, y);
-      ctx.closePath();
-      if (fill) ctx.fill();
-      if (stroke) ctx.stroke();
+    function changeFont(fontName) {
+      document.execCommand('fontName', false, fontName);
     }
 
-    drawInterface();
+    function changeColor(hexColor) {
+      document.execCommand('foreColor', false, hexColor);
+    }
+
+    function insertNote() {
+      const noteHtml = `<div class="sticky-note" contenteditable="true">📌 Escribe una nota o pista clave aquí...</div><p><br></p>`;
+      document.execCommand('insertHTML', false, noteHtml);
+    }
+
+    function insertTable() {
+      const tableHtml = `
+        <table border="1" style="width:100%; border-collapse: collapse; margin: 10px 0; border: 1px solid #cbd5e1;">
+          <tr style="background:#f1f5f9;"><th style="padding:6px;">Animal</th><th style="padding:6px;">Adjective</th><th style="padding:6px;">Comparative</th></tr>
+          <tr><td style="padding:6px;">Cheetah</td><td style="padding:6px;">Fast</td><td style="padding:6px;">Faster than</td></tr>
+        </table><p><br></p>`;
+      document.execCommand('insertHTML', false, tableHtml);
+    }
+
+    function insertSampleMedia(label) {
+      document.execCommand('insertHTML', false, `<p><strong>[Recurso Visual: ${label}]</strong></p>`);
+    }
+
+    function handleFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      if (file.type.startsWith('image/')) {
+        const url = URL.createObjectURL(file);
+        document.execCommand('insertHTML', false, `<img src="${url}" style="max-width:300px; border-radius:8px; margin:10px 0;"><br>`);
+      } else {
+        document.execCommand('insertHTML', false, `<p>📎 <em>Archivo cargado: ${file.name}</em></p>`);
+      }
+    }
+
+    function clearBoard() {
+      if (confirm("¿Deseas limpiar todo el contenido del tablero?")) {
+        board.innerHTML = "<p><br></p>";
+      }
+    }
+
+    function exportNotes() {
+      const blob = new Blob([board.innerHTML], { type: 'text/html' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'Apuntes_Clase.html';
+      a.click();
+    }
+
+    // 4. PRECARGAS CURRICULARES
+    const subjectPresets = [
+      // Inglés
+      `<p style="color:#94a3b8; margin-bottom:10px;">Plantillas rápidas de Inglés:</p>
+       <div class="preset-chip" onclick="board.innerHTML += '<h2>Degrees of Comparison</h2><p>Tall -> Taller -> The tallest</p>'">➕ Comparativos y Superlativos</div>
+       <div class="preset-chip" onclick="board.innerHTML += '<h2>Verbs in Past Simple</h2><p>Play -> Played | Go -> Went</p>'">➕ Verbos regulares e irregulares</div>`,
+      // Español
+      `<p style="color:#94a3b8; margin-bottom:10px;">Plantillas de Español:</p>
+       <div class="preset-chip" onclick="board.innerHTML += '<h2>Categorías Gramaticales</h2><p>Sustantivo: animal, persona o cosa.<br>Adjetivo: cualidad.</p>'">➕ Sustantivos y Adjetivos</div>
+       <div class="preset-chip" onclick="board.innerHTML += '<h2>Conectores Lógicos</h2><p>Causa: porque, ya que.<br>Consecuencia: por lo tanto.</p>'">➕ Conectores de texto</div>`,
+      // Artes
+      `<p style="color:#94a3b8; margin-bottom:10px;">Plantillas de Artes:</p>
+       <div class="preset-chip" onclick="board.innerHTML += '<h2>Teoría del Color</h2><p>Primarios: Amarillo, Azul, Rojo.<br>Secundarios: Verde, Naranja, Violeta.</p>'">➕ Círculo Cromático</div>`,
+      // Tecnología
+      `<p style="color:#94a3b8; margin-bottom:10px;">Plantillas de Tecnología:</p>
+       <div class="preset-chip" onclick="board.innerHTML += '<h2>Estructura de una Web</h2><p>Frontend: HTML5, CSS3, JS.<br>Backend: Servidor y Base de datos.</p>'">➕ Arquitectura Web</div>`
+    ];
+
+    function switchSideTab(idx) {
+      document.querySelectorAll('.tab-item').forEach((el, i) => {
+        el.classList.toggle('active', i === idx);
+      });
+      document.getElementById('panelContent').innerHTML = subjectPresets[idx];
+    }
+
+    // Inicializar primera pestaña
+    switchSideTab(0);
   </script>
 </body>
 </html>
