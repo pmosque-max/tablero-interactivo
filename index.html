@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EduBoard Universal - Tablero Digital Bilingüe</title>
+  <title>EduBoard Studio - Interactive Teaching Suite</title>
   <style>
     :root {
       --frame-bg: #0f172a;
@@ -17,13 +17,11 @@
       --text-muted: #94a3b8;
       --board-bg: #ffffff;
       --board-text: #0f172a;
-      --font-scale: 1rem;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
     body { background-color: var(--frame-bg); color: var(--text-light); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-    /* Barra Superior */
     header {
       background: #090d16;
       padding: 10px 20px;
@@ -46,11 +44,24 @@
       font-weight: 600;
       font-size: 0.85rem;
       cursor: pointer;
-      transition: all 0.2s;
     }
     .btn-mode.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-    /* Contenedor Principal */
+    /* Alerta de Detección de Temas */
+    .theme-prompt-bar {
+      background: #1e3a8a;
+      color: #eff6ff;
+      padding: 8px 16px;
+      font-size: 0.85rem;
+      display: none;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 2px solid #3b82f6;
+    }
+    .theme-prompt-bar button { padding: 4px 10px; margin-left: 8px; font-weight: bold; border-radius: 4px; border: none; cursor: pointer; }
+    .btn-yes { background: var(--accent); color: white; }
+    .btn-no { background: #64748b; color: white; }
+
     main {
       flex: 1;
       display: grid;
@@ -60,8 +71,7 @@
       overflow: hidden;
     }
 
-    /* Contenedor del Tablero Blanco */
-    .board-wrapper {
+    .board-container {
       background: var(--panel-bg);
       border: 2px solid var(--border);
       border-radius: 12px;
@@ -100,7 +110,7 @@
     .btn-mic { background: var(--primary); color: white; border: none; font-weight: bold; }
     .btn-mic.listening { background: var(--danger); animation: pulse 1.5s infinite; }
 
-    /* EL LIENZO BLANCO */
+    /* LIENZO BLANCO UNIVERSAL */
     .canvas-board {
       flex: 1;
       background: var(--board-bg);
@@ -112,21 +122,21 @@
       position: relative;
     }
 
-    /* 1. Letrero Fijo de Fecha */
-    .date-banner {
+    /* 1. Letrero Fijo de Fecha en Todos los Tableros */
+    .date-banner-fixed {
       background: #f1f5f9;
       border-left: 5px solid var(--primary);
       padding: 10px 16px;
-      margin-bottom: 20px;
+      margin-bottom: 18px;
       border-radius: 6px;
       user-select: none;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
-    .date-banner strong { font-size: 1.15rem; color: #1e3a8a; }
+    .date-banner-fixed strong { font-size: 1.15rem; color: #1e3a8a; }
 
-    /* Área de Escritura Bilingüe */
+    /* Contenido Tablero Principal */
     #writingSurface {
       flex: 1;
       outline: none;
@@ -135,63 +145,43 @@
       min-height: 250px;
     }
 
-    /* Contenedor de traducción simultánea */
-    .bilingual-entry {
-      margin-bottom: 14px;
+    /* Figuras Editables */
+    .editable-shape {
+      display: inline-block;
+      margin: 10px;
+      padding: 12px 18px;
+      min-width: 140px;
+      text-align: center;
+      font-weight: bold;
+      outline: none;
+      cursor: move;
     }
-    .en-line { font-weight: 600; color: #0f172a; outline: none; }
-    .es-translation {
-      display: block;
-      font-size: 0.85rem;
-      color: #64748b;
-      font-style: italic;
-      font-family: Georgia, serif;
-      margin-top: 2px;
-      user-select: none;
-    }
+    .shape-box { border: 2px solid var(--primary); background: #eff6ff; color: #1e40af; border-radius: 6px; }
+    .shape-circle { border: 2px solid var(--accent); background: #ecfdf5; color: #065f46; border-radius: 50px; }
+    .shape-arrow { background: #fef3c7; color: #92400e; border: 2px dashed #f59e0b; border-radius: 6px; }
 
-    /* Módulo B: Recursos Gráficos */
-    .graphics-dock {
-      display: none;
-      flex-direction: column;
-      gap: 15px;
-      height: 100%;
-    }
-    .wordsearch-grid {
-      display: grid;
-      grid-template-columns: repeat(7, 1fr);
-      gap: 5px;
-      max-width: 320px;
-      margin: 10px 0;
-    }
-    .grid-cell {
-      aspect-ratio: 1;
-      background: #f8fafc;
+    /* Tablas Didácticas */
+    .grammar-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 14px 0;
       border: 1px solid #cbd5e1;
-      border-radius: 4px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-weight: 800;
-      color: #0f172a;
-      cursor: pointer;
     }
-    .grid-cell.selected { background: var(--primary); color: white; }
+    .grammar-table th { background: #f1f5f9; padding: 8px; text-align: left; color: #1e293b; border: 1px solid #cbd5e1; }
+    .grammar-table td { padding: 8px; border: 1px solid #cbd5e1; color: #334155; }
 
-    /* Módulo C: Quiz Integral */
-    .quiz-view { display: none; flex-direction: column; gap: 14px; overflow-y: auto; }
-    .quiz-card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px; margin-bottom: 10px; }
-    .quiz-card h4 { color: var(--primary); margin-bottom: 6px; }
+    /* Modos B, C, D */
+    .view-container { display: none; flex-direction: column; gap: 14px; height: 100%; }
+    .active-view { display: flex; }
 
-    /* Módulo D: Práctica con IA */
-    .ai-practice-view { display: none; flex-direction: column; gap: 12px; height: 100%; }
+    /* Chat IA */
     .chat-box { flex: 1; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
     .chat-msg { padding: 10px 14px; border-radius: 8px; font-size: 0.95rem; line-height: 1.4; max-width: 85%; }
     .chat-msg.bot { background: #e0f2fe; color: #0369a1; align-self: flex-start; border-left: 4px solid #0284c7; }
     .chat-msg.user { background: #dcfce7; color: #15803d; align-self: flex-end; }
     .chat-msg.correction { background: #fee2e2; color: #b91c1c; border-left: 4px solid #dc2626; align-self: flex-start; }
 
-    /* Panel Lateral de Estado & Herramientas */
+    /* Panel Lateral */
     aside.sidebar {
       background: var(--panel-bg);
       border: 2px solid var(--border);
@@ -203,347 +193,519 @@
       overflow-y: auto;
     }
 
-    .badge-status { padding: 4px 8px; border-radius: 20px; font-size: 0.75rem; background: #334155; color: #38bdf8; }
-
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
   </style>
 </head>
 <body>
 
-  <!-- HEADER -->
+  <!-- BARRA SUPERIOR -->
   <header>
     <div class="brand">
-      <span>📐 EduBoard Workspace</span>
-      <span class="badge-status" id="speechIndicator">Mic: Standby</span>
+      <span>📐 EduBoard Studio</span>
+      <span style="font-size:0.75rem; color:#94a3b8; font-weight:normal;" id="speechState">Mic: Standby</span>
     </div>
 
-    <!-- Modos de Tablero -->
     <nav class="mode-nav">
-      <button class="btn-mode active" onclick="setBoardMode('normal')">a) Normal</button>
-      <button class="btn-mode" onclick="setBoardMode('graphics')">b) Gráficos & Formas</button>
-      <button class="btn-mode" onclick="setBoardMode('quiz')">c) Quiz 6-Skills</button>
-      <button class="btn-mode" onclick="setBoardMode('ai-practice')">d) Práctica con IA</button>
+      <button class="btn-mode active" onclick="switchMode('normal')">Tablero Principal</button>
+      <button class="btn-mode" onclick="switchMode('graphics')">Gráficos & Recursos</button>
+      <button class="btn-mode" onclick="switchMode('quiz')">Quiz de Práctica</button>
+      <button class="btn-mode" onclick="switchMode('ai')">Práctica con IA</button>
     </nav>
 
     <div style="display:flex; gap:8px;">
-      <button style="background:var(--accent); color:white; border:none; font-weight:bold;" onclick="exportBoardContent()">📄 Exportar</button>
-      <button style="background:#475569; color:white; border:none;" onclick="clearActiveBoard()">Limpiar</button>
+      <button style="background:var(--accent); color:white; border:none; font-weight:bold;" onclick="exportSession()">📄 Exportar</button>
+      <button style="background:#475569; color:white; border:none;" onclick="clearCurrentBoard()">Limpiar</button>
     </div>
   </header>
 
-  <!-- CONTENEDOR PRINCIPAL -->
+  <!-- BARRA DE CONFIRMACIÓN DE DETECCIÓN DE TEMA -->
+  <div class="theme-prompt-bar" id="themePromptBar">
+    <span id="themePromptText">Detectado el tema "Past Simple". ¿Deseas sincronizar los otros tableros con este contenido?</span>
+    <div>
+      <button class="btn-yes" onclick="applyThemeDetection(true)">Sí, sincronizar</button>
+      <button class="btn-no" onclick="applyThemeDetection(false)">No</button>
+    </div>
+  </div>
+
+  <!-- ZONA DE TRABAJO -->
   <main>
-    <!-- ZONA CENTRAL DEL TABLERO BLANCO -->
-    <section class="board-wrapper">
-      <!-- Barra de herramientas superior -->
-      <div class="board-toolbar" id="mainToolbar">
+    <section class="board-container">
+      <!-- Barra de herramientas para el tablero -->
+      <div class="board-toolbar" id="topToolbar">
         <div class="tool-group">
-          <button class="btn-mic" id="btnMic" onclick="toggleVoiceTyping()">🎤 Dictar</button>
-          <button onclick="readSelectedText()">🔊 Escuchar (TTS)</button>
+          <button class="btn-mic" id="mainMicBtn" onclick="toggleVoice('board')">🎤 Dictar por Voz</button>
+          <button onclick="readAloud()">🔊 Escuchar (TTS)</button>
         </div>
 
         <div class="tool-group">
-          <select onchange="formatHeading(this.value)">
+          <select onchange="document.execCommand('formatBlock', false, this.value)">
             <option value="p">Párrafo Normal</option>
-            <option value="h1">Título 1 (H1)</option>
-            <option value="h2">Título 2 (H2)</option>
+            <option value="h1">Título Grande (H1)</option>
+            <option value="h2">Subtítulo (H2)</option>
           </select>
-          <select onchange="changeFontFamily(this.value)">
+          <select onchange="document.execCommand('fontName', false, this.value)">
             <option value="system-ui">Sans-Serif</option>
-            <option value="Georgia, serif">Serif (Formal)</option>
+            <option value="Georgia">Serif</option>
             <option value="'Courier New', monospace">Monospace</option>
           </select>
-          <input type="color" value="#0f172a" title="Color marcador" onchange="changeMarkerColor(this.value)">
+          <input type="color" value="#0f172a" title="Color de Marcador" onchange="document.execCommand('foreColor', false, this.value)">
         </div>
 
+        <!-- Figuras y Formas en el Tablero Principal -->
         <div class="tool-group">
-          <button onclick="insertStickyNote()">📌 Nota</button>
-          <button onclick="insertCustomTable()">📊 Tabla</button>
-          <button onclick="document.getElementById('fileInp').click()">📁 Subir PDF/Imagen</button>
-          <input type="file" id="fileInp" style="display:none;" onchange="handleFileUpload(event)">
+          <button onclick="addEditableShape('box')">🔲 Cuadro</button>
+          <button onclick="addEditableShape('circle')">⚪ Círculo</button>
+          <button onclick="addEditableShape('arrow')">➡️ Flecha</button>
+          <button onclick="addStickyNote()">📌 Nota</button>
         </div>
       </div>
 
       <!-- LIENZO BLANCO INTERACTIVO -->
-      <div class="canvas-board" id="canvasBoard">
-        <!-- 1. Letrero Fijo de Fecha -->
-        <div class="date-banner" contenteditable="false">
-          <span id="dateFixedText"><strong>Today is Loading...</strong></span>
+      <div class="canvas-board">
+        <!-- 1. Letrero de Fecha Fijo -->
+        <div class="date-banner-fixed" contenteditable="false">
+          <span id="globalDateText"><strong>Today is Loading...</strong></span>
           <span style="font-size:0.8rem; color:#64748b;">Daily Class Routine</span>
         </div>
 
-        <!-- MODO A: Tablero Normal Limpio -->
-        <div id="writingSurface" contenteditable="true" spellcheck="false"></div>
-
-        <!-- MODO B: Gráficos, Formas y Recursos -->
-        <div id="graphicsView" class="graphics-dock">
-          <h3 style="color:#0f172a;">Recursos Lúdicos y Formas Educativas</h3>
-          <p style="font-size:0.9rem; color:#64748b;">Sopa de letras autoevaluable (Encuentra: LION, BEAR, PLANT):</p>
-          <div class="wordsearch-grid" id="wsGrid"></div>
-          <div id="wsFeedback" style="font-weight:bold; color:var(--accent);"></div>
-
-          <div style="margin-top:10px;">
-            <button onclick="insertShape('rect')">Cuadro de Concepto</button>
-            <button onclick="insertShape('arrow')">Flecha Conectora</button>
-            <button onclick="insertShape('circle')">Círculo Focal</button>
-          </div>
-          <div id="shapeCanvasContainer" style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;"></div>
+        <!-- VISTA A: Tablero Principal (Limpio) -->
+        <div id="view-normal" class="view-container active-view" style="flex:1;">
+          <div id="writingSurface" contenteditable="true" spellcheck="false" placeholder="Empieza a escribir o dictar..."></div>
         </div>
 
-        <!-- MODO C: Quiz Integral 6 Habilidades -->
-        <div id="quizView" class="quiz-view">
-          <h3 style="color:#0f172a;">Evaluación Integral de Habilidades en Inglés</h3>
-
-          <!-- Listening -->
-          <div class="quiz-card">
-            <h4>1. Listening Comprehension</h4>
-            <button onclick="playAudioPrompt('The eagle flies over the mountains')">🔊 Escuchar audio</button>
-            <p style="margin:8px 0; font-size:0.9rem;">¿Qué animal se mencionó en el audio?</p>
-            <label><input type="radio" name="q_list" value="eagle"> Eagle</label>
-            <label style="margin-left:10px;"><input type="radio" name="q_list" value="lion"> Lion</label>
+        <!-- VISTA B: Gráficos, Formas y Tablas Curriculares -->
+        <div id="view-graphics" class="view-container">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="color:#0f172a;" id="graphicsTitle">Recursos Educativos y Gramaticales</h3>
+            <button class="btn-mic" onclick="toggleVoice('graphics')">🎤 Voz en Gráficos</button>
           </div>
-
-          <!-- Reading & Grammar -->
-          <div class="quiz-card">
-            <h4>2. Reading & Grammar</h4>
-            <p style="margin-bottom:6px; font-size:0.9rem;">"A cheetah is ________ than a turtle."</p>
-            <label><input type="radio" name="q_gram" value="faster"> faster</label>
-            <label style="margin-left:10px;"><input type="radio" name="q_gram" value="fastest"> fastest</label>
+          <p style="font-size:0.85rem; color:#64748b;">Contenido autogenerado según el tema activo en clase:</p>
+          <div id="graphicsContentArea" style="flex:1; overflow-y:auto;">
+            <p style="color:#94a3b8; font-style:italic;">Escribe un tema en el tablero principal (ej. "past simple" o "present simple") para cargar tablas y esquemas.</p>
           </div>
-
-          <!-- Writing -->
-          <div class="quiz-card">
-            <h4>3. Writing</h4>
-            <p style="margin-bottom:6px; font-size:0.9rem;">Escribe en inglés: "El elefante es grande":</p>
-            <input type="text" id="q_write" style="width:100%;" placeholder="Type here...">
-          </div>
-
-          <!-- Speaking & Pronunciation -->
-          <div class="quiz-card">
-            <h4>4. Speaking & Pronunciation</h4>
-            <p style="margin-bottom:6px; font-size:0.9rem;">Pronuncia en voz alta: <em>"Nature is beautiful"</em></p>
-            <button class="btn-mic" onclick="recordSpeakingTest(this)">🎙️ Grabar y Evaluar</button>
-            <span id="speechResultText" style="margin-left:10px; font-weight:bold;"></span>
-          </div>
-
-          <button style="background:var(--primary); color:white; font-weight:bold; padding:10px;" onclick="evaluateAllSkillsQuiz()">Calificar Evaluación</button>
-          <div id="quizOverallFeedback" style="padding:10px; border-radius:6px; display:none; margin-top:10px;"></div>
         </div>
 
-        <!-- MODO D: Práctica Guiada con IA -->
-        <div id="aiPracticeView" class="ai-practice-view">
-          <div class="chat-box" id="aiChatBox">
-            <div class="chat-msg bot">
-              Hello! I am your AI Interactive Tutor. Complete the prompt below to begin:
-            </div>
-            <div class="chat-msg bot" style="font-weight:bold;">
-              "I want to practice..."
-            </div>
+        <!-- VISTA C: Quiz de Práctica -->
+        <div id="view-quiz" class="view-container">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="color:#0f172a;" id="quizTitle">Quiz de Práctica</h3>
+            <button class="btn-mic" onclick="toggleVoice('quiz')">🎤 Voz en Quiz</button>
+          </div>
+          <div id="quizContentArea" style="flex:1; overflow-y:auto;">
+            <p style="color:#94a3b8; font-style:italic;">El quiz se generará automáticamente cuando definas el tema de la lección.</p>
+          </div>
+        </div>
+
+        <!-- VISTA D: Práctica Guiada con IA -->
+        <div id="view-ai" class="view-container">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 style="color:#0f172a;">Interactive AI Language Tutor</h3>
+            <button class="btn-mic" id="aiMicBtn" onclick="toggleVoice('ai')">🎤 Dictar Respuesta</button>
+          </div>
+          <div class="chat-box" id="aiChat">
+            <div class="chat-msg bot">Hello! I am your AI practice coach. Start by completing:</div>
+            <div class="chat-msg bot" style="font-weight:bold;">"I want to practice..."</div>
           </div>
           <div style="display:flex; gap:8px;">
-            <input type="text" id="aiUserInput" style="flex:1;" placeholder="Completa: I want to practice [Speaking / Grammar / Animals]...">
-            <button style="background:var(--primary); color:white; font-weight:bold;" onclick="sendAiMessage()">Enviar</button>
+            <input type="text" id="aiInput" style="flex:1;" placeholder="Type or use microphone...">
+            <button style="background:var(--primary); color:white; font-weight:bold;" onclick="processAiInput()">Enviar</button>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- BARRA LATERAL INFORMATIVA Y REGISTRO -->
+    <!-- PANEL LATERAL DOCENTE -->
     <aside class="sidebar">
-      <h3 style="color:#38bdf8; font-size:1.05rem;">Panel del Docente</h3>
-      <p style="font-size:0.85rem; color:var(--text-muted);">Seguimiento de clase y adaptaciones inclusivas.</p>
-
+      <h3 style="color:#38bdf8; font-size:1.05rem;">Panel Curricular Activo</h3>
       <div style="background:#0f172a; padding:10px; border-radius:8px; border:1px solid var(--border);">
-        <label style="font-size:0.75rem; font-weight:bold; color:var(--text-muted);">IDIOMA AUDITIVO / TTS:</label>
-        <select id="ttsLangSelect" style="width:100%; margin-top:4px;">
-          <option value="en-US">English (US)</option>
-          <option value="es-CO">Español (Colombia)</option>
-        </select>
+        <label style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">TEMA DETECTADO:</label>
+        <p id="activeThemeBadge" style="color:#38bdf8; font-weight:bold; margin-top:4px;">Ninguno (Lienzo Libre)</p>
       </div>
 
       <div style="background:#0f172a; padding:10px; border-radius:8px; border:1px solid var(--border);">
-        <label style="font-size:0.75rem; font-weight:bold; color:var(--text-muted);">HISTORIAL DE FEEDBACK:</label>
-        <div id="feedbackLog" style="font-size:0.8rem; color:#cbd5e1; margin-top:6px; max-height:160px; overflow-y:auto;">
-          Lienzo listo para sesión didáctica.
+        <label style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">TEMAS RÁPIDOS (DICCIONARIO):</label>
+        <div style="display:flex; flex-direction:column; gap:6px; margin-top:6px;">
+          <button onclick="manualSetTheme('past simple')">Past Simple (Verbs & Regulars)</button>
+          <button onclick="manualSetTheme('present simple')">Present Simple (Habits & Routines)</button>
+          <button onclick="manualSetTheme('comparatives')">Comparatives & Superlatives</button>
         </div>
       </div>
 
-      <div style="margin-top:auto;">
-        <button style="width:100%; background:var(--accent); color:white; font-weight:bold;" onclick="syncSheets()">Sincronizar Calificaciones</button>
+      <div style="background:#0f172a; padding:10px; border-radius:8px; border:1px solid var(--border); flex:1; overflow-y:auto;">
+        <label style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">HISTORIAL / APUNTES:</label>
+        <div id="logArea" style="font-size:0.8rem; color:#cbd5e1; margin-top:6px;">Sistema listo.</div>
       </div>
     </aside>
   </main>
 
   <script>
-    // -----------------------------------------------------------------
-    // 1. FECHA AUTOMÁTICA EN EL TABLERO
-    // -----------------------------------------------------------------
-    function initDateBanner() {
-      const now = new Date();
+    // -------------------------------------------------------------
+    // 1. FECHA AUTOMÁTICA FIJA EN EL ENCABEZADO
+    // -------------------------------------------------------------
+    function renderGlobalDate() {
+      const today = new Date();
       const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
-      const formatted = now.toLocaleDateString('en-US', options);
-      // Letrero: Today is [Day], [Month Date], [Year]
-      document.getElementById('dateFixedText').innerHTML = `<strong>Today is ${formatted}</strong>`;
+      const formatted = today.toLocaleDateString('en-US', options);
+      // Letrero requerido: Today is [Day], [Month Date], [Year]
+      document.getElementById('globalDateText').innerHTML = `<strong>Today is ${formatted}</strong>`;
     }
 
-    // -----------------------------------------------------------------
-    // 2. MODOS DE TABLERO
-    // -----------------------------------------------------------------
-    function setBoardMode(mode) {
-      document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
-      event.target.classList.add('active');
-
-      document.getElementById('writingSurface').style.display = 'none';
-      document.getElementById('graphicsView').style.display = 'none';
-      document.getElementById('quizView').style.display = 'none';
-      document.getElementById('aiPracticeView').style.display = 'none';
-      document.getElementById('mainToolbar').style.display = 'flex';
-
-      if (mode === 'normal') {
-        document.getElementById('writingSurface').style.display = 'block';
-      } else if (mode === 'graphics') {
-        document.getElementById('graphicsView').style.display = 'flex';
-        renderWordSearch();
-      } else if (mode === 'quiz') {
-        document.getElementById('quizView').style.display = 'flex';
-      } else if (mode === 'ai-practice') {
-        document.getElementById('aiPracticeView').style.display = 'flex';
-        document.getElementById('mainToolbar').style.display = 'none';
+    // -------------------------------------------------------------
+    // 2. DICCIONARIO TEMÁTICO CURRICULAR (INGLÉS / CIENCIAS / LENGUAJE)
+    // -------------------------------------------------------------
+    const curriculumData = {
+      "past simple": {
+        name: "Past Simple",
+        tableHtml: `
+          <table class="grammar-table">
+            <thead>
+              <tr><th>Infinitive (Present)</th><th>Past Simple</th><th>Traducción (ES)</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Play</td><td><strong>Played</strong></td><td>Jugar / Jugó</td></tr>
+              <tr><td>Go</td><td><strong>Went</strong></td><td>Ir / Fue</td></tr>
+              <tr><td>Eat</td><td><strong>Ate</strong></td><td>Comer / Comió</td></tr>
+              <tr><td>See</td><td><strong>Saw</strong></td><td>Ver / Vio</td></tr>
+              <tr><td>Study</td><td><strong>Studied</strong></td><td>Estudiar / Estudió</td></tr>
+            </tbody>
+          </table>
+          <p style="font-size:0.85rem; color:#475569;"><strong>Grammar Rule:</strong> Regular verbs add <em>-ed</em>. Irregular verbs change form completely.</p>
+        `,
+        quiz: [
+          { q: "Yesterday, Maria ________ to school by bus.", opts: ["go", "went", "goes"], ans: 1 },
+          { q: "What is the past form of the verb 'Eat'?", opts: ["Eated", "Ate", "Eating"], ans: 1 },
+          { q: "Speaking: Pronounce out loud: 'I visited my grandparents.'", type: "speaking", target: "visited" }
+        ],
+        aiPrompt: "Let's practice the Past Simple! Tell me one thing you did yesterday starting with 'Yesterday I...'"
+      },
+      "present simple": {
+        name: "Present Simple",
+        tableHtml: `
+          <table class="grammar-table">
+            <thead>
+              <tr><th>Subject</th><th>Verb Form</th><th>Example (Habits)</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>I / You / We / They</td><td>Base Verb</td><td>They play soccer every Saturday.</td></tr>
+              <tr><td>He / She / It</td><td>Verb + -s/-es</td><td>She reads a book every night.</td></tr>
+            </tbody>
+          </table>
+        `,
+        quiz: [
+          { q: "He ________ English every morning.", opts: ["study", "studies", "studying"], ans: 1 },
+          { q: "Do they ________ in London?", opts: ["lives", "live", "living"], ans: 1 }
+        ],
+        aiPrompt: "Present Simple practice: Tell me about your daily routine. What time do you wake up?"
+      },
+      "comparatives": {
+        name: "Comparatives & Superlatives",
+        tableHtml: `
+          <table class="grammar-table">
+            <thead>
+              <tr><th>Adjective</th><th>Comparative</th><th>Superlative</th></tr>
+            </thead>
+            <tbody>
+              <tr><td>Fast</td><td>Faster than</td><td>The fastest</td></tr>
+              <tr><td>Big</td><td>Bigger than</td><td>The biggest</td></tr>
+              <tr><td>Intelligent</td><td>More intelligent than</td><td>The most intelligent</td></tr>
+            </tbody>
+          </table>
+        `,
+        quiz: [
+          { q: "A cheetah is ________ than a horse.", opts: ["faster", "fastest", "more fast"], ans: 0 },
+          { q: "Mount Everest is the ________ mountain in the world.", opts: ["higher", "highest", "most high"], ans: 1 }
+        ],
+        aiPrompt: "Comparative challenge: Compare two animals. Example: 'The lion is stronger than the cat.'"
       }
-    }
+    };
 
-    // -----------------------------------------------------------------
-    // 3. TRADUCCIÓN SIMULTÁNEA EN EL TABLERO NORMAL
-    // -----------------------------------------------------------------
-    let translateTimer;
+    // -------------------------------------------------------------
+    // 3. DETECTOR DE TEMA Y TRADUCCIÓN SIMULTÁNEA
+    // -------------------------------------------------------------
+    let detectedCandidate = "";
+    let debounceTimer;
+
     const writingSurface = document.getElementById('writingSurface');
 
-    writingSurface.addEventListener('keyup', (e) => {
-      clearTimeout(translateTimer);
-      translateTimer = setTimeout(triggerSimultaneousTranslation, 700);
+    writingSurface.addEventListener('keyup', () => {
+      clearTimeout(debounceTimer);
+      debounceTimer = setTimeout(analyzeBoardText, 700);
     });
 
-    async function triggerSimultaneousTranslation() {
-      const textNodes = writingSurface.innerText.trim();
-      if (!textNodes) return;
+    function analyzeBoardText() {
+      const text = writingSurface.innerText.toLowerCase();
 
-      const lines = textNodes.split('\n').filter(l => l.trim().length > 0 && !l.includes('[Trad:'));
-      if (lines.length === 0) return;
-
-      const lastLine = lines[lines.length - 1];
-
-      // Consulta asíncrona de traducción EN -> ES (MyMemory API gratuita)
-      try {
-        const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(lastLine)}&langpair=en|es`);
-        const data = await res.json();
-        if (data && data.responseData) {
-          const trans = data.responseData.translatedText;
-          logFeedback(`Traducción generada: "${lastLine}" -> "${trans}"`);
+      // Chequeo en diccionario curricular
+      for (let key in curriculumData) {
+        if (text.includes(key)) {
+          detectedCandidate = key;
+          document.getElementById('themePromptText').innerText = 
+            `Se ha detectado el tema "${curriculumData[key].name}". ¿Deseas sincronizar los otros tableros con este contenido?`;
+          document.getElementById('themePromptBar').style.display = 'flex';
+          break;
         }
-      } catch (err) {
-        console.log("Translation offline fallback.");
+      }
+
+      // Traducción simultánea
+      translateLatestLine();
+    }
+
+    async function translateLatestLine() {
+      const fullText = writingSurface.innerText.trim();
+      if (!fullText) return;
+      const lines = fullText.split('\n').filter(l => l.trim().length > 0 && !l.includes('[ES:'));
+      if (lines.length === 0) return;
+      const target = lines[lines.length - 1];
+
+      try {
+        const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(target)}&langpair=en|es`);
+        const json = await res.json();
+        if (json && json.responseData) {
+          logAction(`Traducción: "${target}" ➔ "${json.responseData.translatedText}"`);
+        }
+      } catch (e) {
+        console.log("Offline mode.");
       }
     }
 
-    // -----------------------------------------------------------------
-    // 4. VOZ Y AUDIO (STT & TTS)
-    // -----------------------------------------------------------------
+    function applyThemeDetection(confirmSync) {
+      document.getElementById('themePromptBar').style.display = 'none';
+      if (confirmSync && detectedCandidate) {
+        syncTheme(detectedCandidate);
+      }
+    }
+
+    function manualSetTheme(key) {
+      detectedCandidate = key;
+      syncTheme(key);
+    }
+
+    function syncTheme(key) {
+      const data = curriculumData[key];
+      if (!data) return;
+
+      document.getElementById('activeThemeBadge').innerText = data.name;
+      logAction(`Tema activo establecido a: ${data.name}`);
+
+      // Actualizar Tablero Gráficos
+      document.getElementById('graphicsTitle').innerText = `Recursos: ${data.name}`;
+      document.getElementById('graphicsContentArea').innerHTML = data.tableHtml;
+
+      // Actualizar Tablero Quiz
+      document.getElementById('quizTitle').innerText = `Quiz de Práctica: ${data.name}`;
+      let qHtml = "";
+      data.quiz.forEach((q, idx) => {
+        if (q.type === 'speaking') {
+          qHtml += `
+            <div style="background:#f1f5f9; padding:10px; border-radius:6px; margin-bottom:10px;">
+              <strong>${idx + 1}. ${q.q}</strong><br>
+              <button class="btn-mic" style="margin-top:6px;" onclick="evalVoiceQuiz('${q.target}', this)">🎙️ Pronunciar</button>
+              <span class="quiz-spk-res" style="margin-left:10px; font-weight:bold;"></span>
+            </div>
+          `;
+        } else {
+          qHtml += `
+            <div style="background:#f1f5f9; padding:10px; border-radius:6px; margin-bottom:10px;">
+              <strong>${idx + 1}. ${q.q}</strong><br>
+              ${q.opts.map((opt, i) => `<label style="margin-right:12px;"><input type="radio" name="qz_${idx}" value="${i}"> ${opt}</label>`).join('')}
+            </div>
+          `;
+        }
+      });
+      qHtml += `<button style="background:var(--primary); color:white; font-weight:bold; padding:8px 16px;" onclick="checkThemeQuiz('${key}')">Evaluar Respuestas</button>
+                <div id="quizResultMsg" style="margin-top:8px; font-weight:bold;"></div>`;
+      document.getElementById('quizContentArea').innerHTML = qHtml;
+
+      // Actualizar Tablero IA
+      const chat = document.getElementById('aiChat');
+      chat.innerHTML += `
+        <div class="chat-msg bot">Topic updated to: <strong>${data.name}</strong></div>
+        <div class="chat-msg bot">${data.aiPrompt}</div>
+      `;
+      chat.scrollTop = chat.scrollHeight;
+    }
+
+    // -------------------------------------------------------------
+    // 4. RECONOCIMIENTO DE VOZ UNIVERSAL (CUALQUIER TABLERO)
+    // -------------------------------------------------------------
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let recognizer;
-    let isRecording = false;
+    let globalRec;
+    let currentVoiceTarget = 'board';
+    let isListening = false;
 
     if (SpeechRecognition) {
-      recognizer = new SpeechRecognition();
-      recognizer.continuous = true;
-      recognizer.interimResults = false;
-      recognizer.lang = 'en-US';
+      globalRec = new SpeechRecognition();
+      globalRec.continuous = true;
+      globalRec.interimResults = false;
+      globalRec.lang = 'en-US';
 
-      recognizer.onstart = () => {
-        isRecording = true;
-        document.getElementById('btnMic').classList.add('listening');
-        document.getElementById('btnMic').innerText = '⏹️ Detener';
-        document.getElementById('speechIndicator').innerText = 'Mic: Listening...';
-        document.getElementById('speechIndicator').style.color = '#ef4444';
+      globalRec.onstart = () => {
+        isListening = true;
+        document.getElementById('speechState').innerText = "Mic: Listening...";
+        document.getElementById('speechState').style.color = "#ef4444";
       };
 
-      recognizer.onresult = (e) => {
+      globalRec.onresult = (e) => {
         const text = e.results[e.results.length - 1][0].transcript;
-        document.execCommand('insertText', false, ' ' + text);
-        triggerSimultaneousTranslation();
+        if (currentVoiceTarget === 'board') {
+          document.execCommand('insertText', false, ' ' + text);
+          analyzeBoardText();
+        } else if (currentVoiceTarget === 'ai') {
+          document.getElementById('aiInput').value = text;
+          processAiInput();
+        } else {
+          logAction(`Voz detectada: "${text}"`);
+        }
       };
 
-      recognizer.onend = () => {
-        isRecording = false;
-        document.getElementById('btnMic').classList.remove('listening');
-        document.getElementById('btnMic').innerText = '🎤 Dictar';
-        document.getElementById('speechIndicator').innerText = 'Mic: Standby';
-        document.getElementById('speechIndicator').style.color = '#38bdf8';
+      globalRec.onend = () => {
+        isListening = false;
+        document.getElementById('speechState').innerText = "Mic: Standby";
+        document.getElementById('speechState').style.color = "#38bdf8";
+        document.querySelectorAll('.btn-mic').forEach(b => b.classList.remove('listening'));
       };
     }
 
-    function toggleVoiceTyping() {
-      if (!recognizer) {
+    function toggleVoice(target) {
+      if (!globalRec) {
         alert("Reconocimiento de voz no soportado. Usa Chrome o Edge.");
         return;
       }
-      if (!isRecording) recognizer.start();
-      else recognizer.stop();
+      currentVoiceTarget = target;
+      if (!isListening) {
+        globalRec.start();
+        event.target.classList.add('listening');
+      } else {
+        globalRec.stop();
+        event.target.classList.remove('listening');
+      }
     }
 
-    function readSelectedText() {
+    function readAloud() {
       const sel = window.getSelection().toString().trim() || writingSurface.innerText;
       if (!sel) return;
       window.speechSynthesis.cancel();
       const utt = new SpeechSynthesisUtterance(sel);
-      utt.lang = document.getElementById('ttsLangSelect').value;
-      window.speechSynthesis.speak(utt);
-    }
-
-    function playAudioPrompt(sentence) {
-      window.speechSynthesis.cancel();
-      const utt = new SpeechSynthesisUtterance(sentence);
       utt.lang = 'en-US';
       window.speechSynthesis.speak(utt);
     }
 
-    // -----------------------------------------------------------------
-    // 5. FORMATO, NOTAS Y TABLAS
-    // -----------------------------------------------------------------
-    function formatHeading(tag) { document.execCommand('formatBlock', false, tag); }
-    function changeFontFamily(f) { document.execCommand('fontName', false, f); }
-    function changeMarkerColor(c) { document.execCommand('foreColor', false, c); }
-
-    function insertStickyNote() {
-      const html = `<div style="background:#fef08a; color:#854d0e; padding:10px; border-left:5px solid #eab308; border-radius:6px; margin:8px 0;" contenteditable="true">📌 Apunte clave...</div><p><br></p>`;
-      document.execCommand('insertHTML', false, html);
-    }
-
-    function insertCustomTable() {
-      const html = `<table border="1" style="width:100%; border-collapse:collapse; margin:10px 0; border:1px solid #cbd5e1;">
-        <tr style="background:#f1f5f9;"><th style="padding:6px;">Concept (EN)</th><th style="padding:6px;">Traducción (ES)</th></tr>
-        <tr><td style="padding:6px;">Savanna</td><td style="padding:6px;">Sabana</td></tr>
-      </table><p><br></p>`;
-      document.execCommand('insertHTML', false, html);
-    }
-
-    function handleFileUpload(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      if (file.type.startsWith('image/')) {
-        const url = URL.createObjectURL(file);
-        document.execCommand('insertHTML', false, `<img src="${url}" style="max-width:280px; border-radius:8px; margin:8px 0;"><br>`);
-      } else {
-        document.execCommand('insertHTML', false, `<p>📎 <strong>Documento:</strong> ${file.name}</p><br>`);
+    // -------------------------------------------------------------
+    // 5. HERRAMIENTAS Y FIGURAS EDITABLES EN EL TABLERO
+    // -------------------------------------------------------------
+    function addEditableShape(shape) {
+      let shapeHtml = '';
+      if (shape === 'box') {
+        shapeHtml = `<div class="editable-shape shape-box" contenteditable="true">Concept Box</div> &nbsp;`;
+      } else if (shape === 'circle') {
+        shapeHtml = `<div class="editable-shape shape-circle" contenteditable="true">Focal Idea</div> &nbsp;`;
+      } else if (shape === 'arrow') {
+        shapeHtml = `<div class="editable-shape shape-arrow" contenteditable="true">Cause ➔ Effect</div> &nbsp;`;
       }
+      document.execCommand('insertHTML', false, shapeHtml);
     }
 
-    function clearActiveBoard() {
-      if (confirm("¿Limpiar todo el contenido del tablero?")) {
+    function addStickyNote() {
+      const note = `<div style="background:#fef08a; color:#854d0e; padding:10px; border-left:5px solid #eab308; border-radius:6px; margin:8px 0;" contenteditable="true">📌 Apunte / Nota rápida...</div><p><br></p>`;
+      document.execCommand('insertHTML', false, note);
+    }
+
+    // -------------------------------------------------------------
+    // 6. PRÁCTICA DE IA (DIÁLOGO FORMATIVO)
+    // -------------------------------------------------------------
+    let aiStage = 0;
+
+    function processAiInput() {
+      const inp = document.getElementById('aiInput');
+      const val = inp.value.trim();
+      if (!val) return;
+
+      appendChat(val, 'user');
+      inp.value = "";
+
+      setTimeout(() => {
+        if (aiStage === 0) {
+          appendChat("What topic do you like to practice? (e.g. Past Simple, Present Simple, Comparatives)", 'bot');
+          aiStage = 1;
+        } else if (aiStage === 1) {
+          const match = val.toLowerCase();
+          if (match.includes("past")) {
+            syncTheme("past simple");
+          } else if (match.includes("present")) {
+            syncTheme("present simple");
+          } else {
+            syncTheme("comparatives");
+          }
+          aiStage = 2;
+        } else {
+          // Evaluación sintáctica interactiva
+          if (val.split(' ').length >= 3) {
+            appendChat(`Good sentence! Correct syntax detected for: "${val}".`, 'bot');
+          } else {
+            appendChat(`Try making a longer sentence with subject, verb, and complement.`, 'correction');
+          }
+        }
+      }, 500);
+    }
+
+    function appendChat(txt, cls) {
+      const box = document.getElementById('aiChat');
+      const div = document.createElement('div');
+      div.className = `chat-msg ${cls}`;
+      div.innerText = txt;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function evalVoiceQuiz(target, btn) {
+      if (!SpeechRecognition) return;
+      const rec = new SpeechRecognition();
+      rec.lang = 'en-US';
+      rec.onstart = () => { btn.innerText = "Listening..."; btn.classList.add('listening'); };
+      rec.onresult = (e) => {
+        const heard = e.results[0][0].transcript.toLowerCase();
+        const out = btn.nextElementSibling;
+        if (heard.includes(target.toLowerCase())) {
+          out.innerHTML = `<span style="color:var(--accent);">✅ Correct ("${heard}")</span>`;
+        } else {
+          out.innerHTML = `<span style="color:var(--danger);">❌ Repeat ("${heard}")</span>`;
+        }
+      };
+      rec.onend = () => { btn.innerText = "🎙️ Pronunciar"; btn.classList.remove('listening'); };
+      rec.start();
+    }
+
+    function checkThemeQuiz(key) {
+      const data = curriculumData[key];
+      let correct = 0;
+      data.quiz.forEach((q, idx) => {
+        if (q.ans !== undefined) {
+          const sel = document.querySelector(`input[name="qz_${idx}"]:checked`);
+          if (sel && parseInt(sel.value) === q.ans) correct++;
+        }
+      });
+      document.getElementById('quizResultMsg').innerText = `Aciertos: ${correct} de preguntas teóricas.`;
+    }
+
+    // -------------------------------------------------------------
+    // 7. GESTIÓN Y LIMPIEZA
+    // -------------------------------------------------------------
+    function switchMode(m) {
+      document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+
+      document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active-view'));
+      document.getElementById(`view-${m}`).classList.add('active-view');
+      document.getElementById('topToolbar').style.display = (m === 'normal') ? 'flex' : 'none';
+    }
+
+    function clearCurrentBoard() {
+      if (confirm("¿Deseas vaciar el contenido de la vista actual?")) {
         writingSurface.innerHTML = "";
       }
     }
 
-    function exportBoardContent() {
+    function exportSession() {
       const blob = new Blob([writingSurface.innerHTML], { type: 'text/html' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
@@ -551,159 +713,13 @@
       a.click();
     }
 
-    // -----------------------------------------------------------------
-    // 6. MODO B: SOPA DE LETRAS DINÁMICA
-    // -----------------------------------------------------------------
-    const wsLetters = [
-      ['L','I','O','N','X','Y','Z'],
-      ['B','E','A','R','A','B','C'],
-      ['P','L','A','N','T','D','E'],
-      ['W','A','T','E','R','F','G'],
-      ['E','A','R','T','H','H','I']
-    ];
-
-    function renderWordSearch() {
-      const container = document.getElementById('wsGrid');
-      container.innerHTML = "";
-      wsLetters.flat().forEach(letter => {
-        const cell = document.createElement('div');
-        cell.className = 'grid-cell';
-        cell.innerText = letter;
-        cell.onclick = () => {
-          cell.classList.toggle('selected');
-          validateWordSearch();
-        };
-        container.appendChild(cell);
-      });
+    function logAction(msg) {
+      const l = document.getElementById('logArea');
+      l.innerHTML = `• ${msg}<br>` + l.innerHTML;
     }
 
-    function validateWordSearch() {
-      const sel = Array.from(document.querySelectorAll('.grid-cell.selected')).map(c => c.innerText).join('');
-      const fb = document.getElementById('wsFeedback');
-      if (sel.includes("LION")) fb.innerText = "¡Correcto! Encontraste: LION 🦁";
-      else if (sel.includes("BEAR")) fb.innerText = "¡Correcto! Encontraste: BEAR 🐻";
-      else if (sel.includes("PLANT")) fb.innerText = "¡Correcto! Encontraste: PLANT 🌱";
-    }
-
-    function insertShape(type) {
-      const box = document.getElementById('shapeCanvasContainer');
-      const el = document.createElement('div');
-      el.style.padding = "10px 15px";
-      el.style.borderRadius = type === 'circle' ? '50%' : '6px';
-      el.style.border = "2px dashed #2563eb";
-      el.style.background = "#eff6ff";
-      el.style.color = "#1e40af";
-      el.style.fontWeight = "bold";
-      el.innerText = type === 'arrow' ? 'Concept A ──► Concept B' : 'Shape Box';
-      box.appendChild(el);
-    }
-
-    // -----------------------------------------------------------------
-    // 7. MODO C: EVALUACIÓN DE 6 SKILLS
-    // -----------------------------------------------------------------
-    function recordSpeakingTest(btn) {
-      if (!SpeechRecognition) return;
-      const rec = new SpeechRecognition();
-      rec.lang = 'en-US';
-      rec.onstart = () => { btn.innerText = "Listening..."; btn.classList.add('listening'); };
-      rec.onresult = (e) => {
-        const heard = e.results[0][0].transcript.toLowerCase();
-        const res = document.getElementById('speechResultText');
-        if (heard.includes("nature") || heard.includes("beautiful")) {
-          res.innerHTML = `<span style="color:var(--accent);">✅ Correct ("${heard}")</span>`;
-          res.dataset.score = "1";
-        } else {
-          res.innerHTML = `<span style="color:var(--danger);">❌ Try again ("${heard}")</span>`;
-          res.dataset.score = "0";
-        }
-      };
-      rec.onend = () => { btn.innerText = "🎙️ Grabar y Evaluar"; btn.classList.remove('listening'); };
-      rec.start();
-    }
-
-    function evaluateAllSkillsQuiz() {
-      let score = 0;
-      // 1. Listening
-      const qList = document.querySelector('input[name="q_list"]:checked');
-      if (qList && qList.value === 'eagle') score++;
-      // 2. Reading / Grammar
-      const qGram = document.querySelector('input[name="q_gram"]:checked');
-      if (qGram && qGram.value === 'faster') score++;
-      // 3. Writing
-      const qWrite = document.getElementById('q_write').value.trim().toLowerCase();
-      if (qWrite === 'the elephant is big' || qWrite === 'the elephant is large') score++;
-      // 4. Speaking
-      if (document.getElementById('speechResultText').dataset.score === "1") score++;
-
-      const fb = document.getElementById('quizOverallFeedback');
-      fb.style.display = "block";
-      fb.style.background = score >= 3 ? "#dcfce7" : "#fee2e2";
-      fb.style.color = score >= 3 ? "#166534" : "#991b1b";
-      fb.innerHTML = `Puntaje Total: <strong>${score} / 4</strong>. ${score >= 3 ? "¡Excelente desempeño!" : "Repasa los contenidos y vuelve a intentarlo."}`;
-      logFeedback(`Quiz completado con puntaje: ${score}/4`);
-    }
-
-    // -----------------------------------------------------------------
-    // 8. MODO D: PRÁCTICA ADAPTATIVA CON IA
-    // -----------------------------------------------------------------
-    let aiStep = 0;
-    let selectedTopic = "";
-
-    function sendAiMessage() {
-      const inp = document.getElementById('aiUserInput');
-      const val = inp.value.trim();
-      if (!val) return;
-
-      appendChatMessage(val, 'user');
-      inp.value = "";
-
-      setTimeout(() => {
-        if (aiStep === 0) {
-          // Fase 1: Detecta el deseo de práctica
-          selectedTopic = val;
-          appendChatMessage("What topic do you like to practice? (e.g., Animals, Past Tense, Adjectives)", 'bot');
-          aiStep = 1;
-        } else if (aiStep === 1) {
-          // Fase 2: Configuración del reto
-          selectedTopic = val;
-          appendChatMessage(`Perfect! Let's practice ${val}. What is your English level? [A1, A2, B1]`, 'bot');
-          aiStep = 2;
-        } else if (aiStep === 2) {
-          // Fase 3: Inicia el ejercicio con feedback
-          appendChatMessage(`Level set to ${val}. Challenge 1: Make a complete sentence comparing two elements in ${selectedTopic}.`, 'bot');
-          aiStep = 3;
-        } else {
-          // Evaluación sintáctica interactiva
-          if (val.toLowerCase().includes("is") && (val.toLowerCase().includes("than") || val.toLowerCase().includes("the"))) {
-            appendChatMessage(`Excellent! "${val}" has correct grammar structure. +10 XP.`, 'bot');
-          } else {
-            appendChatMessage(`Grammar Check: Make sure to include the verb 'to be' and 'than'. Try revising: "${val}"`, 'correction');
-          }
-        }
-      }, 600);
-    }
-
-    function appendChatMessage(msg, type) {
-      const box = document.getElementById('aiChatBox');
-      const div = document.createElement('div');
-      div.className = `chat-msg ${type}`;
-      div.innerText = msg;
-      box.appendChild(div);
-      box.scrollTop = box.scrollHeight;
-    }
-
-    function logFeedback(msg) {
-      const log = document.getElementById('feedbackLog');
-      log.innerHTML = `• ${msg}<br>` + log.innerHTML;
-    }
-
-    function syncSheets() {
-      alert("Calificaciones empaquetadas. Listas para enviar a la base de datos de Google Sheets.");
-    }
-
-    // Inicialización al cargar la ventana
     window.onload = () => {
-      initDateBanner();
+      renderGlobalDate();
     };
   </script>
 </body>
