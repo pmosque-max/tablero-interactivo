@@ -10,6 +10,7 @@
       --panel-bg: #1e293b;
       --border: #334155;
       --primary: #2563eb;
+      --primary-hover: #1d4ed8;
       --accent: #059669;
       --danger: #dc2626;
       --text-light: #f8fafc;
@@ -55,7 +56,7 @@
       padding: 5px 8px;
     }
 
-    /* Notificación emergente de tema */
+    /* Notificación de confirmación de tema */
     .theme-prompt-bar {
       background: #1e3a8a;
       color: #eff6ff;
@@ -150,17 +151,56 @@
       font-size: 1.25rem;
       line-height: 1.8;
       min-height: 250px;
-      text-align: left;
     }
 
-    /* Figuras con botón borrar individual */
-    .board-item-wrapper {
-      position: relative;
-      display: inline-block;
-      margin: 8px 0;
-      max-width: 100%;
+    #writingSurface p, #writingSurface h1, #writingSurface h2 {
+      margin-bottom: 8px;
     }
-    .btn-delete-item {
+
+    /* Definición temática cargada en el tablero */
+    .theme-definition-box {
+      background: #eff6ff;
+      border-left: 4px solid var(--primary);
+      padding: 12px 16px;
+      margin: 12px 0;
+      border-radius: 6px;
+      font-size: 1rem;
+      line-height: 1.5;
+      color: #1e3a8a;
+      position: relative;
+    }
+    .theme-definition-box small {
+      display: block;
+      color: #475569;
+      margin-top: 4px;
+      font-style: italic;
+    }
+
+    /* FIGURAS ARRASTRABLES Y EDITABLES */
+    .draggable-shape {
+      position: absolute;
+      cursor: move;
+      user-select: none;
+      z-index: 100;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.15);
+    }
+
+    .shape-content {
+      padding: 12px 18px;
+      min-width: 130px;
+      text-align: center;
+      font-weight: bold;
+      outline: none;
+    }
+
+    .shape-box-style { border: 2px solid var(--primary); background: #eff6ff; color: #1e40af; border-radius: 6px; }
+    .shape-circle-style { border: 2px solid var(--accent); background: #ecfdf5; color: #065f46; border-radius: 50px; }
+    .shape-arrow-style { background: #fef3c7; color: #92400e; border: 2px dashed #f59e0b; border-radius: 6px; }
+    .shape-sticky-style { background: #fef08a; color: #854d0e; border-left: 6px solid #eab308; border-radius: 6px; text-align: left; }
+
+    .btn-delete-node {
       position: absolute;
       top: -8px;
       right: -8px;
@@ -168,38 +208,14 @@
       color: white;
       border: none;
       border-radius: 50%;
-      width: 22px;
-      height: 22px;
-      font-size: 12px;
+      width: 20px;
+      height: 20px;
+      font-size: 11px;
       font-weight: bold;
+      cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
-      cursor: pointer;
-      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-      z-index: 10;
-    }
-
-    .editable-shape {
-      padding: 12px 18px;
-      min-width: 140px;
-      text-align: center;
-      font-weight: bold;
-      outline: none;
-      display: block;
-    }
-    .shape-box { border: 2px solid var(--primary); background: #eff6ff; color: #1e40af; border-radius: 6px; }
-    .shape-circle { border: 2px solid var(--accent); background: #ecfdf5; color: #065f46; border-radius: 50px; }
-    .shape-arrow { background: #fef3c7; color: #92400e; border: 2px dashed #f59e0b; border-radius: 6px; }
-
-    .sticky-note {
-      background: #fef08a;
-      color: #854d0e;
-      padding: 12px;
-      border-left: 6px solid #eab308;
-      border-radius: 6px;
-      font-size: 1rem;
-      display: block;
     }
 
     .curriculum-table {
@@ -212,6 +228,7 @@
     .curriculum-table th { background: #f1f5f9; padding: 8px; text-align: left; border: 1px solid #cbd5e1; color:#0f172a; }
     .curriculum-table td { padding: 8px; border: 1px solid #cbd5e1; color:#334155; }
 
+    /* Flashcards sin dependencias de imagen externa */
     .flashcards-container {
       display: grid;
       grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
@@ -220,18 +237,20 @@
     }
     .flashcard {
       background: #f8fafc;
-      border: 1px solid #cbd5e1;
+      border: 2px solid #cbd5e1;
       border-radius: 8px;
-      padding: 8px;
+      padding: 12px 8px;
       text-align: center;
       cursor: pointer;
       display: flex;
       flex-direction: column;
       align-items: center;
       gap: 6px;
+      transition: all 0.2s;
     }
-    .flashcard img { width: 100%; height: 75px; object-fit: cover; border-radius: 6px; }
-    .flashcard strong { font-size: 0.85rem; color: #0f172a; }
+    .flashcard:hover { border-color: var(--primary); transform: translateY(-2px); }
+    .flashcard .symbol { font-size: 2rem; margin-bottom: 2px; }
+    .flashcard strong { font-size: 0.9rem; color: #0f172a; }
     .flashcard span { font-size: 0.75rem; color: #64748b; font-style: italic; }
 
     .view-container { display: none; flex-direction: column; gap: 14px; height: 100%; }
@@ -255,21 +274,34 @@
       overflow-y: auto;
     }
 
+    .topic-list-btn {
+      text-align: left;
+      background: #334155;
+      color: #f8fafc;
+      border: 1px solid #475569;
+      padding: 6px 8px;
+      font-size: 0.8rem;
+      border-radius: 4px;
+      cursor: pointer;
+      width: 100%;
+    }
+    .topic-list-btn:hover { background: var(--primary); }
+
     @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
   </style>
 </head>
 <body>
 
-  <!-- ENCABEZADO -->
+  <!-- BARRA SUPERIOR -->
   <header>
     <div class="brand">
-      <span>📐 EduBoard Studio</span>
+      <span>📐 EduBoard Studio Pro</span>
       <span style="font-size:0.75rem; color:#94a3b8;" id="speechStatus">Mic: Standby</span>
     </div>
 
-    <!-- Selectores Curriculares -->
+    <!-- Selectores Curriculares (Grado y Nivel) -->
     <div class="filter-group">
-      <select id="gradeSelect" onchange="updateCurricularFilters()">
+      <select id="gradeSelect" onchange="updateFilters()">
         <option value="6">Sixth Grade (6°)</option>
         <option value="7">Seventh Grade (7°)</option>
         <option value="8">Eighth Grade (8°)</option>
@@ -278,7 +310,7 @@
         <option value="11">Eleventh Grade (11°)</option>
       </select>
 
-      <select id="cefrSelect" onchange="updateCurricularFilters()">
+      <select id="cefrSelect" onchange="updateFilters()">
         <option value="A1">Level A1 (Beginner)</option>
         <option value="A2">Level A2 (Elementary)</option>
         <option value="B1">Level B1 (Intermediate)</option>
@@ -286,17 +318,24 @@
       </select>
     </div>
 
+    <!-- Navegación entre Tableros -->
     <nav class="mode-nav">
       <button class="btn-mode active" onclick="switchMode('normal', this)">Tablero Principal</button>
       <button class="btn-mode" onclick="switchMode('graphics', this)">Gráficos & Recursos</button>
       <button class="btn-mode" onclick="switchMode('quiz', this)">Quiz Integral</button>
       <button class="btn-mode" onclick="switchMode('ai', this)">Práctica con Wendy</button>
     </nav>
+
+    <!-- Botón de Limpieza y Exportación -->
+    <div style="display:flex; gap:6px;">
+      <button style="background:var(--danger); color:white; border:none; font-weight:bold;" onclick="clearEntireBoard()">🗑️ Limpiar Tablero</button>
+      <button style="background:var(--accent); color:white; border:none; font-weight:bold;" onclick="exportSession()">📄 Exportar</button>
+    </div>
   </header>
 
   <!-- BARRA DE CONFIRMACIÓN DE TEMA -->
   <div class="theme-prompt-bar" id="themePromptBar">
-    <span id="themePromptText">Detectado tema de clase. ¿Deseas sincronizar los otros tableros?</span>
+    <span id="themePromptText">Detectado tema de clase. ¿Deseas sincronizar los tableros y cargar la definición?</span>
     <div>
       <button class="btn-yes" onclick="confirmThemeSync(true)">Sí, sincronizar</button>
       <button class="btn-no" onclick="confirmThemeSync(false)">No</button>
@@ -311,37 +350,39 @@
           <button onclick="readAloud()">🔊 Escuchar (TTS)</button>
         </div>
 
-        <!-- Alineadores de Texto Funcionales -->
+        <!-- Alineadores por Línea/Párrafo -->
         <div class="tool-group">
-          <button type="button" title="Alinear a la Izquierda" onmousedown="applyAlignment(event, 'left')">⬅️ Izq</button>
-          <button type="button" title="Centrar" onmousedown="applyAlignment(event, 'center')">↔️ Centro</button>
-          <button type="button" title="Alinear a la Derecha" onmousedown="applyAlignment(event, 'right')">➡️ Der</button>
+          <button type="button" title="Alinear línea a la Izquierda" onmousedown="alignBlock(event, 'left')">⬅️ Izq</button>
+          <button type="button" title="Centrar esta línea" onmousedown="alignBlock(event, 'center')">↔️ Centro</button>
+          <button type="button" title="Alinear línea a la Derecha" onmousedown="alignBlock(event, 'right')">➡️ Der</button>
         </div>
 
+        <!-- Formato y Fuentes -->
         <div class="tool-group">
-          <select onchange="applyBlockFormat(this.value)">
+          <select onchange="applyBlockTag(this.value)">
             <option value="p">Párrafo Normal</option>
             <option value="h1">Título Grande (H1)</option>
             <option value="h2">Subtítulo (H2)</option>
           </select>
-          <select onchange="applyFont(this.value)">
+          <select onchange="document.execCommand('fontName', false, this.value)">
             <option value="system-ui">Sans-Serif</option>
             <option value="Georgia">Serif</option>
             <option value="'Courier New', monospace">Monospace</option>
           </select>
-          <input type="color" value="#0f172a" title="Color" onchange="applyColor(this.value)">
+          <input type="color" value="#0f172a" title="Color marcador" onchange="document.execCommand('foreColor', false, this.value)">
         </div>
 
+        <!-- Figuras Arrastrables y Editables -->
         <div class="tool-group">
-          <button type="button" onclick="insertDeletableShape('box')">🔲 Cuadro</button>
-          <button type="button" onclick="insertDeletableShape('circle')">⚪ Círculo</button>
-          <button type="button" onclick="insertDeletableShape('arrow')">➡️ Flecha</button>
-          <button type="button" onclick="insertDeletableSticky()">📌 Nota</button>
+          <button type="button" onclick="createDraggableShape('box')">🔲 Cuadro</button>
+          <button type="button" onclick="createDraggableShape('circle')">⚪ Círculo</button>
+          <button type="button" onclick="createDraggableShape('arrow')">➡️ Flecha</button>
+          <button type="button" onclick="createDraggableShape('sticky')">📌 Nota</button>
         </div>
       </div>
 
-      <div class="canvas-board">
-        <!-- 1. Letrero de Fecha Automático Garantizado -->
+      <div class="canvas-board" id="canvasBoardArea">
+        <!-- Letrero Fijo de Fecha -->
         <div class="date-banner-fixed" contenteditable="false">
           <span id="globalDateText"><strong>Today is Loading...</strong></span>
           <span style="font-size:0.8rem; color:#64748b;" id="gradeBadgeDisplay">6th Grade • Level A1</span>
@@ -352,7 +393,7 @@
           <div id="writingSurface" contenteditable="true" spellcheck="false" placeholder="Escribe o dicta aquí tu lección..."></div>
         </div>
 
-        <!-- VISTA B: Gráficos, Flashcards y Multimedia -->
+        <!-- VISTA B: Gráficos, Flashcards y Recursos -->
         <div id="view-graphics" class="view-container">
           <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
             <h3 style="color:#0f172a;" id="graphicsTitle">Gráficos, Tablas & Flashcards</h3>
@@ -360,12 +401,12 @@
           </div>
 
           <div style="background:#f1f5f9; padding:8px 12px; border-radius:8px; border:1px solid #cbd5e1; display:flex; gap:8px;">
-            <input type="text" id="mediaSearchInput" style="flex:1;" placeholder="Pegar URL de YouTube o buscar imagen...">
-            <button style="background:var(--primary); color:white; font-weight:bold;" onclick="searchAndEmbedMedia()">Insertar Recurso</button>
+            <input type="text" id="mediaSearchInput" style="flex:1;" placeholder="Pegar URL de YouTube para incrustar...">
+            <button style="background:var(--primary); color:white; font-weight:bold;" onclick="embedYouTubeResource()">Insertar Video</button>
           </div>
 
           <div id="graphicsContentArea" style="flex:1; overflow-y:auto;">
-            <p style="color:#94a3b8; font-style:italic;">Escribe un tema en el tablero principal (ej. "past simple", "animals", "present simple") para generar las tablas y flashcards.</p>
+            <p style="color:#94a3b8; font-style:italic;">Escribe un tema en el tablero principal o elígelo en el catálogo lateral para cargar tablas y flashcards de 10 ítems.</p>
           </div>
         </div>
 
@@ -376,54 +417,50 @@
             <button class="btn-mic" onclick="toggleVoice('quiz')">🎤 Responder por Voz</button>
           </div>
           <div id="quizContentArea" style="flex:1; overflow-y:auto;">
-            <p style="color:#94a3b8; font-style:italic;">El quiz se generará adaptado al grado y nivel seleccionado al definir el tema en el tablero.</p>
+            <p style="color:#94a3b8; font-style:italic;">El quiz adaptativo se generará al sincronizar el tema de clase.</p>
           </div>
         </div>
 
         <!-- VISTA D: Práctica con Wendy (IA) -->
         <div id="view-ai" class="view-container">
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3 style="color:#0f172a;">AI Tutor: Wendy</h3>
+            <h3 style="color:#0f172a;">AI Conversational Tutor: Wendy</h3>
             <button class="btn-mic" id="aiMicBtn" onclick="toggleVoice('ai')">🎤 Hablar con Wendy</button>
           </div>
           <div class="chat-box" id="aiChat">
             <div class="chat-msg bot">Hello, I'm Wendy, How can I help you?</div>
           </div>
           <div style="display:flex; gap:8px;">
-            <input type="text" id="aiInput" style="flex:1;" placeholder="Escribe o presiona el micrófono para hablar con Wendy...">
+            <input type="text" id="aiInput" style="flex:1;" placeholder="Habla o escribe aquí...">
             <button style="background:var(--primary); color:white; font-weight:bold;" onclick="handleWendyInput()">Enviar</button>
           </div>
         </div>
       </div>
     </section>
 
-    <!-- PANEL LATERAL -->
+    <!-- PANEL LATERAL CON BUSCADOR Y TEMAS CONTEXTUALIZADOS -->
     <aside class="sidebar">
-      <h3 style="color:#38bdf8; font-size:1.05rem;">Control Pedagógico</h3>
+      <h3 style="color:#38bdf8; font-size:1.05rem;">Catálogo Curricular</h3>
+
+      <!-- Barra de Búsqueda de Temas -->
+      <div style="background:#0f172a; padding:8px; border-radius:8px; border:1px solid var(--border);">
+        <input type="text" id="themeSearchBox" placeholder="🔍 Buscar tema (ej. fauna, past...)" style="width:100%; background:#1e293b; color:white;" oninput="filterThemeList()">
+      </div>
+
       <div style="background:#0f172a; padding:10px; border-radius:8px; border:1px solid var(--border);">
         <label style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">TEMA ACTIVO:</label>
         <p id="activeThemeBadge" style="color:#38bdf8; font-weight:bold; margin-top:4px;">Lienzo Libre</p>
       </div>
 
-      <div style="background:#0f172a; padding:10px; border-radius:8px; border:1px solid var(--border);">
-        <label style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">TEMAS CURRICULARES:</label>
-        <div style="display:flex; flex-direction:column; gap:5px; margin-top:6px; max-height:160px; overflow-y:auto;">
-          <button onclick="triggerManualTheme('present simple')">Present Simple (Routines)</button>
-          <button onclick="triggerManualTheme('past simple')">Past Simple (Verbs & Stories)</button>
-          <button onclick="triggerManualTheme('animals')">Animals & Nature (Vocabulary)</button>
-          <button onclick="triggerManualTheme('comparatives')">Comparatives & Superlatives</button>
-        </div>
-      </div>
-
       <div style="background:#0f172a; padding:10px; border-radius:8px; border:1px solid var(--border); flex:1; overflow-y:auto;">
-        <label style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">HISTORIAL:</label>
-        <div id="logArea" style="font-size:0.8rem; color:#cbd5e1; margin-top:6px;">Sistema cargado.</div>
+        <label style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">TEMAS DISPONIBLES:</label>
+        <div id="themeListContainer" style="display:flex; flex-direction:column; gap:5px; margin-top:6px;"></div>
       </div>
     </aside>
   </main>
 
   <script>
-    // 1. FECHA AUTOMÁTICA
+    // 1. FECHA AUTOMÁTICA REAL
     function setRealDate() {
       const today = new Date();
       const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
@@ -435,180 +472,335 @@
     }
     setRealDate();
 
-    function updateCurricularFilters() {
+    function updateFilters() {
       const grade = document.getElementById('gradeSelect').value;
       const cefr = document.getElementById('cefrSelect').value;
       document.getElementById('gradeBadgeDisplay').innerText = `${grade}th Grade • Level ${cefr}`;
-      logAction(`Filtros: Grado ${grade}°, Nivel ${cefr}`);
+      buildThemeList();
     }
 
-    // 2. ALINEACIÓN DIRECTA (Garantizada)
-    function applyAlignment(e, alignType) {
+    // 2. ALINEACIÓN POR LÍNEA / BLOQUE ESPECÍFICO
+    function alignBlock(e, alignment) {
       if (e) e.preventDefault();
+      const selection = window.getSelection();
+      if (!selection.rangeCount) return;
+
+      let node = selection.anchorNode;
+      if (node.nodeType === 3) node = node.parentNode;
+
+      // Buscar el contenedor de bloque padre dentro de writingSurface
       const surface = document.getElementById('writingSurface');
-      surface.style.textAlign = alignType;
-      document.execCommand(alignType === 'left' ? 'justifyLeft' : (alignType === 'center' ? 'justifyCenter' : 'justifyRight'), false, null);
+      while (node && node !== surface && !['P', 'H1', 'H2', 'DIV'].includes(node.tagName)) {
+        node = node.parentNode;
+      }
+
+      if (node && node !== surface) {
+        node.style.textAlign = alignment;
+      } else {
+        document.execCommand(alignment === 'left' ? 'justifyLeft' : (alignment === 'center' ? 'justifyCenter' : 'justifyRight'), false, null);
+      }
     }
 
-    function applyBlockFormat(tag) { document.execCommand('formatBlock', false, tag); }
-    function applyFont(fontName) { document.execCommand('fontName', false, fontName); }
-    function applyColor(color) { document.execCommand('foreColor', false, color); }
+    function applyBlockTag(tag) {
+      document.execCommand('formatBlock', false, tag);
+    }
 
-    // 3. FIGURAS Y NOTAS CON BORRADO
-    function insertDeletableShape(shapeType) {
+    // 3. LIMPIEZA COMPLETA DEL TABLERO
+    function clearEntireBoard() {
+      if (confirm("¿Estás seguro de que deseas borrar todo el texto y las figuras del tablero?")) {
+        document.getElementById('writingSurface').innerHTML = "";
+        document.querySelectorAll('.draggable-shape').forEach(s => s.remove());
+        document.getElementById('activeThemeBadge').innerText = "Lienzo Libre";
+      }
+    }
+
+    // 4. FIGURAS ARRASTRABLES Y EDITABLES
+    function createDraggableShape(type) {
+      const boardArea = document.getElementById('canvasBoardArea');
       const id = "shape_" + Date.now();
-      let innerHtml = '';
-      if (shapeType === 'box') innerHtml = `<div class="editable-shape shape-box" contenteditable="true">Concept Box</div>`;
-      if (shapeType === 'circle') innerHtml = `<div class="editable-shape shape-circle" contenteditable="true">Key Concept</div>`;
-      if (shapeType === 'arrow') innerHtml = `<div class="editable-shape shape-arrow" contenteditable="true">Cause ➔ Effect</div>`;
+      const shape = document.createElement('div');
+      shape.className = "draggable-shape";
+      shape.id = id;
+      shape.style.top = "100px";
+      shape.style.left = "80px";
 
-      const wrapper = `
-        <div class="board-item-wrapper" id="${id}" contenteditable="false">
-          <button class="btn-delete-item" onclick="removeBoardItem('${id}')" title="Eliminar figura">×</button>
-          ${innerHtml}
-        </div> &nbsp;
+      let innerClass = "shape-box-style";
+      let text = "Concept Box";
+      if (type === 'circle') { innerClass = "shape-circle-style"; text = "Focal Idea"; }
+      if (type === 'arrow') { innerClass = "shape-arrow-style"; text = "Cause ➔ Effect"; }
+      if (type === 'sticky') { innerClass = "shape-sticky-style"; text = "📌 Sticky Note..."; }
+
+      shape.innerHTML = `
+        <button class="btn-delete-node" onclick="document.getElementById('${id}').remove()">×</button>
+        <div class="shape-content ${innerClass}" contenteditable="true">${text}</div>
       `;
-      const surface = document.getElementById('writingSurface');
-      surface.focus();
-      document.execCommand('insertHTML', false, wrapper);
+
+      boardArea.appendChild(shape);
+      enableDrag(shape);
     }
 
-    function insertDeletableSticky() {
-      const id = "note_" + Date.now();
-      const wrapper = `
-        <div class="board-item-wrapper" id="${id}" contenteditable="false" style="display:block;">
-          <button class="btn-delete-item" onclick="removeBoardItem('${id}')" title="Eliminar nota">×</button>
-          <div class="sticky-note" contenteditable="true">📌 Apunte editable...</div>
-        </div><p><br></p>
-      `;
-      const surface = document.getElementById('writingSurface');
-      surface.focus();
-      document.execCommand('insertHTML', false, wrapper);
+    function enableDrag(element) {
+      let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+      element.onmousedown = dragMouseDown;
+
+      function dragMouseDown(e) {
+        if (e.target.classList.contains('btn-delete-node') || e.target.getAttribute('contenteditable') === 'true') {
+          return; // Permitir edición de texto y borrado sin mover
+        }
+        e.preventDefault();
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        document.onmouseup = closeDragElement;
+        document.onmousemove = elementDrag;
+      }
+
+      function elementDrag(e) {
+        e.preventDefault();
+        pos1 = pos3 - e.clientX;
+        pos2 = pos4 - e.clientY;
+        pos3 = e.clientX;
+        pos4 = e.clientY;
+        element.style.top = (element.offsetTop - pos2) + "px";
+        element.style.left = (element.offsetLeft - pos1) + "px";
+      }
+
+      function closeDragElement() {
+        document.onmouseup = null;
+        document.onmousemove = null;
+      }
     }
 
-    function removeBoardItem(id) {
-      const item = document.getElementById(id);
-      if (item) item.remove();
-    }
-
-    // 4. DICCIONARIO CURRICULAR EXTENDIDO
-    const curriculumDB = {
-      "past simple": {
-        name: "Past Simple & Irregular Verbs",
+    // 5. BANCO CURRICULAR COMPLETO CON CONTEXTUALIZACIÓN REGIONAL
+    const masterCurriculum = {
+      "animals": {
+        name: "Animals & Biodiversity (General)",
+        definition: "Animals are living organisms that inhabit ecosystems. In English, we describe them using specific nouns and adjectives to explain their habitats, physical traits, and behaviors.",
+        defEs: "Los animales son seres vivos que habitan ecosistemas. En inglés se describen utilizando adjetivos y sustantivos específicos para detallar su hábitat y comportamiento.",
         table: [
-          { c1: "Go", c2: "Went", c3: "Ir / Fue" },
-          { c1: "Eat", c2: "Ate", c3: "Comer / Comió" },
-          { c1: "Play", c2: "Played", c3: "Jugar / Jugó" },
-          { c1: "See", c2: "Saw", c3: "Ver / Vio" },
-          { c1: "Write", c2: "Wrote", c3: "Escribir / Escribió" },
-          { c1: "Read", c2: "Read", c3: "Leer / Leyó" },
-          { c1: "Buy", c2: "Bought", c3: "Comprar / Compró" },
-          { c1: "Make", c2: "Made", c3: "Hacer / Hizo" },
-          { c1: "Speak", c2: "Spoke", c3: "Hablar / Habló" },
-          { c1: "Drink", c2: "Drank", c3: "Beber / Bebió" }
+          { c1: "Lion", c2: "Mammal / Carnivore", c3: "León" },
+          { c1: "Elephant", c2: "Herbivore / Big ears", c3: "Elefante" },
+          { c1: "Giraffe", c2: "Tall neck / Leaves", c3: "Jirafa" },
+          { c1: "Zebra", c2: "Black & white stripes", c3: "Cebra" },
+          { c1: "Monkey", c2: "Primate / Agile", c3: "Mono" },
+          { c1: "Bear", c2: "Forest mammal", c3: "Oso" },
+          { c1: "Dolphin", c2: "Aquatic mammal", c3: "Delfín" },
+          { c1: "Eagle", c2: "Bird of prey", c3: "Águila" },
+          { c1: "Tiger", c2: "Striped predator", c3: "Tigre" },
+          { c1: "Kangaroo", c2: "Marsupial / Jumper", c3: "Canguro" }
         ],
         flashcards: [
-          { en: "Went", es: "Fue (Go)", img: "https://images.unsplash.com/photo-1476514525535-07fb3b4ae5f1?w=200&q=60" },
-          { en: "Ate", es: "Comió (Eat)", img: "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=200&q=60" },
-          { en: "Bought", es: "Compró (Buy)", img: "https://images.unsplash.com/photo-1472851294608-062f824d29cc?w=200&q=60" },
-          { en: "Played", es: "Jugó (Play)", img: "https://images.unsplash.com/photo-1511512578047-dfb367046420?w=200&q=60" }
+          { symbol: "🦁", en: "Lion", es: "León" },
+          { symbol: "🐘", en: "Elephant", es: "Elefante" },
+          { symbol: "🦒", en: "Giraffe", es: "Jirafa" },
+          { symbol: "🦓", en: "Zebra", es: "Cebra" },
+          { symbol: "🐬", en: "Dolphin", es: "Delfín" },
+          { symbol: "🦅", en: "Eagle", es: "Águila" }
         ],
         quiz: [
-          { q: "Yesterday Carlos ________ a delicious pizza.", opts: ["eat", "ate", "eated"], ans: 1 },
-          { q: "We ________ to the river last Sunday.", opts: ["went", "go", "gone"], ans: 0 },
-          { q: "Speaking: Pronounce 'I studied English yesterday.'", type: "speaking", target: "studied" }
+          { q: "Which animal has black and white stripes?", opts: ["Zebra", "Lion", "Giraffe"], ans: 0 },
+          { q: "Speaking: Pronounce 'The dolphin swims in the ocean.'", type: "speaking", target: "dolphin" }
+        ]
+      },
+      "animals from colombia": {
+        name: "Animals from Colombia & Neotropical Fauna",
+        definition: "Colombia is one of the most biodiverse nations on Earth. We learn the English names for native and endemic wildlife across the Orinoco, Amazon, Andes, and Caribbean regions.",
+        defEs: "Colombia es uno de los países más biodiversos. Aprendemos los nombres en inglés de su fauna endémica en las regiones de la Orinoquía, Amazonía, Andes y Caribe.",
+        table: [
+          { c1: "Pink River Dolphin", c2: "Orinoco & Amazon rivers", c3: "Delfín Rosado / Tonina" },
+          { c1: "Chigüiro (Capybara)", c2: "Savanna wetlands", c3: "Chigüiro" },
+          { c1: "Spectacled Bear", c2: "Andean cloud forests", c3: "Oso de Anteojos" },
+          { c1: "Andean Condor", c2: "National bird / High peaks", c3: "Cóndor Andino" },
+          { c1: "Jaguar", c2: "Tropical apex predator", c3: "Jaguar" },
+          { c1: "Golden Poison Frog", c2: "Pacific rain forest", c3: "Rana Dorada" },
+          { c1: "Cotton-top Tamarin", c2: "Endemic Caribbean primate", c3: "Tití Cabeciblanco" },
+          { c1: "Giant Anteater", c2: "Llanos plains", c3: "Oso Palmero" },
+          { c1: "Sloth", c2: "Tree canopy mammal", c3: "Perezoso" },
+          { c1: "Morpho Butterfly", c2: "Blue jungle insect", c3: "Mariposa Azul" }
+        ],
+        flashcards: [
+          { symbol: "🐬", en: "Pink Dolphin", es: "Delfín Rosado" },
+          { symbol: "🐾", en: "Capybara", es: "Chigüiro" },
+          { symbol: "🐻", en: "Spectacled Bear", es: "Oso de Anteojos" },
+          { symbol: "🦅", en: "Andean Condor", es: "Cóndor Andino" },
+          { symbol: "🐆", en: "Jaguar", es: "Jaguar" },
+          { symbol: "🐸", en: "Poison Frog", es: "Rana Dorada" }
+        ],
+        quiz: [
+          { q: "Which animal is the largest rodent and lives in Colombian wetlands?", opts: ["Chigüiro", "Condor", "Jaguar"], ans: 0 },
+          { q: "Speaking: Pronounce 'The Spectacled Bear lives in the Andes.'", type: "speaking", target: "bear" }
+        ]
+      },
+      "animals from mexico": {
+        name: "Animals from Mexico & Mesoamerica",
+        definition: "Mesoamerican ecosystems feature unique wildlife. We study native Mexican species and their importance in cultural heritage and conservation.",
+        defEs: "Los ecosistemas mesoamericanos albergan especies únicas. Estudiamos la fauna mexicana y su relevancia ecológica y cultural.",
+        table: [
+          { c1: "Axolotl", c2: "Endemic amphibian", c3: "Ajolote" },
+          { c1: "Golden Eagle", c2: "National emblem", c3: "Águila Real" },
+          { c1: "Vaquita Marina", c2: "Endangered porpoise", c3: "Vaquita Marina" },
+          { c1: "Ocelot", c2: "Spotted wild cat", c3: "Ocelote" },
+          { c1: "Coati", c2: "Foraging mammal", c3: "Tejón / Coatí" },
+          { c1: "Mexican Wolf", c2: "Northern forest canid", c3: "Lobo Mexicano" },
+          { c1: "Xoloitzcuintli", c2: "Native hairless dog", c3: "Perro Xoloitzcuintle" },
+          { c1: "Monarch Butterfly", c2: "Migratory insect", c3: "Mariposa Monarca" },
+          { c1: "Spider Monkey", c2: "Jungle canopy primate", c3: "Mono Araña" },
+          { c1: "Tapir", c2: "Tropical forest herbivore", c3: "Tapir" }
+        ],
+        flashcards: [
+          { symbol: "🦎", en: "Axolotl", es: "Ajolote" },
+          { symbol: "🦅", en: "Golden Eagle", es: "Águila Real" },
+          { symbol: "🦋", en: "Monarch Butterfly", es: "Mariposa Monarca" },
+          { symbol: "🐺", en: "Mexican Wolf", es: "Lobo Mexicano" }
+        ],
+        quiz: [
+          { q: "Which famous amphibian regenerates its limbs and comes from Xochimilco?", opts: ["Axolotl", "Tapir", "Coati"], ans: 0 }
         ]
       },
       "present simple": {
-        name: "Present Simple & Daily Routines",
+        name: "Present Simple & Daily Habits",
+        definition: "The Present Simple tense is used to describe regular habits, universal facts, and daily routines. With he/she/it, we add -s or -es to the verb.",
+        defEs: "El presente simple describe rutinas, verdades universales y hábitos diarios. Con las terceras personas (he, she, it) se agrega -s o -es al verbo.",
         table: [
-          { c1: "Wake up", c2: "Wakes up", c3: "Despertarse" },
-          { c1: "Have breakfast", c2: "Has breakfast", c3: "Desayunar" },
-          { c1: "Go to school", c2: "Goes to school", c3: "Ir al colegio" },
-          { c1: "Study", c2: "Studies", c3: "Estudiar" },
-          { c1: "Watch TV", c2: "Watches TV", c3: "Ver televisión" },
-          { c1: "Do homework", c2: "Does homework", c3: "Hacer tareas" },
-          { c1: "Play soccer", c2: "Plays soccer", c3: "Jugar fútbol" },
-          { c1: "Take a shower", c2: "Takes a shower", c3: "Bañarse" },
-          { c1: "Cook dinner", c2: "Cooks dinner", c3: "Cocinar la cena" },
-          { c1: "Sleep", c2: "Sleeps", c3: "Dormir" }
+          { c1: "I study", c2: "Habit / Base verb", c3: "Yo estudio" },
+          { c1: "He studies", c2: "Third person singular (-ies)", c3: "Él estudia" },
+          { c1: "They play", c2: "Plural base verb", c3: "Ellos juegan" },
+          { c1: "She plays", c2: "Third person (-s)", c3: "Ella juega" },
+          { c1: "We eat", c2: "Base verb", c3: "Nosotros comemos" },
+          { c1: "It eats", c2: "Third person (-s)", c3: "Eso come" },
+          { c1: "You go", c2: "Base verb", c3: "Tú vas" },
+          { c1: "He goes", c2: "Third person (-es)", c3: "Él va" },
+          { c1: "Do you...?", c2: "Question auxiliary", c3: "¿Tú...?" },
+          { c1: "Does she...?", c2: "3rd person question auxiliary", c3: "¿Ella...?" }
         ],
         flashcards: [
-          { en: "Wake up", es: "Despertar", img: "https://images.unsplash.com/photo-1541480601022-2308c0f02487?w=200&q=60" },
-          { en: "Study", es: "Estudiar", img: "https://images.unsplash.com/photo-1497633762265-9d179a990aa6?w=200&q=60" }
+          { symbol: "⏰", en: "Wake up", es: "Despertarse" },
+          { symbol: "🍳", en: "Have breakfast", es: "Desayunar" },
+          { symbol: "🏫", en: "Go to school", es: "Ir al colegio" },
+          { symbol: "📚", en: "Study English", es: "Estudiar inglés" }
         ],
         quiz: [
-          { q: "She ________ up at 6:00 AM every day.", opts: ["wake", "wakes", "waking"], ans: 1 },
-          { q: "They ________ soccer on weekends.", opts: ["plays", "play", "playing"], ans: 1 }
+          { q: "She ________ (watch) documentaries on television.", opts: ["watches", "watch", "watchs"], ans: 0 },
+          { q: "Speaking: Pronounce 'They play soccer every afternoon.'", type: "speaking", target: "soccer" }
         ]
       },
-      "animals": {
-        name: "Animals & Biodiversity",
+      "past simple": {
+        name: "Past Simple (Events & Stories)",
+        definition: "The Past Simple expresses completed actions in the past. Regular verbs add -ed, while irregular verbs change form completely (go -> went, eat -> ate).",
+        defEs: "El pasado simple expresa acciones concluidas en el pasado. Los verbos regulares agregan -ed, mientras que los irregulares transforman su estructura.",
         table: [
-          { c1: "Lion", c2: "/ˈlaɪ.ən/", c3: "León" },
-          { c1: "Elephant", c2: "/ˈel.ɪ.fənt/", c3: "Elefante" },
-          { c1: "Giraffe", c2: "/dʒɪˈrɑːf/", c3: "Jirafa" },
-          { c1: "Monkey", c2: "/ˈmʌŋ.ki/", c3: "Mono" },
-          { c1: "Zebra", c2: "/ˈziː.brə/", c3: "Cebra" },
-          { c1: "Dolphin", c2: "/ˈdɒl.fɪn/", c3: "Delfín" },
-          { c1: "Tiger", c2: "/ˈtaɪ.ɡər/", c3: "Tigre" },
-          { c1: "Bear", c2: "/beər/", c3: "Oso" },
-          { c1: "Kangaroo", c2: "/ˌkæŋ.ɡərˈuː/", c3: "Canguro" },
-          { c1: "Penguin", c2: "/ˈpeŋ.ɡwɪn/", c3: "Pingüino" }
+          { c1: "Go ➔ Went", c2: "Ir ➔ Fue", c3: "Irregular" },
+          { c1: "Eat ➔ Ate", c2: "Comer ➔ Comió", c3: "Irregular" },
+          { c1: "Visit ➔ Visited", c2: "Visitar ➔ Visitó", c3: "Regular (-ed)" },
+          { c1: "See ➔ Saw", c2: "Ver ➔ Vio", c3: "Irregular" },
+          { c1: "Study ➔ Studied", c2: "Estudiar ➔ Estudió", c3: "Regular (-ied)" },
+          { c1: "Buy ➔ Bought", c2: "Comprar ➔ Compró", c3: "Irregular" },
+          { c1: "Play ➔ Played", c2: "Jugar ➔ Jugó", c3: "Regular (-ed)" },
+          { c1: "Write ➔ Wrote", c2: "Escribir ➔ Escribió", c3: "Irregular" },
+          { c1: "Have ➔ Had", c2: "Tener ➔ Tuvo", c3: "Irregular" },
+          { c1: "Did not (didn't)", c2: "Negative auxiliary", c3: "No hizo / Pasado" }
         ],
         flashcards: [
-          { en: "Lion", es: "León", img: "https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=200&q=60" },
-          { en: "Elephant", es: "Elefante", img: "https://images.unsplash.com/photo-1557050543-4d5f4e07ef46?w=200&q=60" },
-          { en: "Giraffe", es: "Jirafa", img: "https://images.unsplash.com/photo-1547721064-da6cfb341d50?w=200&q=60" },
-          { en: "Dolphin", es: "Delfín", img: "https://images.unsplash.com/photo-1607153333879-c1a0c34e747d?w=200&q=60" }
+          { symbol: "✈️", en: "Went", es: "Fue (Go)" },
+          { symbol: "📖", en: "Read", es: "Leyó (Read)" },
+          { symbol: "🍎", en: "Ate", es: "Comió (Eat)" },
+          { symbol: "⚽", en: "Played", es: "Jugó (Play)" }
         ],
         quiz: [
-          { q: "Which animal is the largest land mammal?", opts: ["Elephant", "Lion", "Giraffe"], ans: 0 },
-          { q: "Which animal swims fast in the ocean?", opts: ["Bear", "Dolphin", "Monkey"], ans: 1 }
+          { q: "Last week we ________ a trip to the botanical garden.", opts: ["made", "make", "maked"], ans: 0 },
+          { q: "Speaking: Pronounce 'Yesterday I studied for the exam.'", type: "speaking", target: "studied" }
+        ]
+      },
+      "present perfect": {
+        name: "Present Perfect (Life Experiences)",
+        definition: "The Present Perfect connects past actions with the present. It is formed using have/has + past participle (e.g., 'I have lived in Puerto Gaitán for five years').",
+        defEs: "El presente perfecto conecta hechos del pasado con el presente o experiencias de vida. Se forma con have/has + participio pasado.",
+        table: [
+          { c1: "I have visited", c2: "Yo he visitado", c3: "Experience" },
+          { c1: "She has seen", c2: "Ella ha visto", c3: "3rd Person" },
+          { c1: "We have lived", c2: "Hemos vivido", c3: "Duration" },
+          { c1: "Since", c2: "Desde (punto de inicio)", c3: "Time marker" },
+          { c1: "For", c2: "Por / Durante (periodo)", c3: "Time marker" },
+          { c1: "Already", c2: "Ya (afirmativas)", c3: "Adverb" },
+          { c1: "Yet", c2: "Aún / Todavía (negativas)", c3: "Adverb" },
+          { c1: "Have you ever...?", c2: "¿Alguna vez has...?", c3: "Question formula" },
+          { c1: "Gone", c2: "Ido (Participle)", c3: "Verb form" },
+          { c1: "Done", c2: "Hecho (Participle)", c3: "Verb form" }
+        ],
+        flashcards: [
+          { symbol: "🗺️", en: "Have traveled", es: "He viajado" },
+          { symbol: "⏳", en: "Since 2020", es: "Desde 2020" },
+          { symbol: "✅", en: "Already done", es: "Ya realizado" }
+        ],
+        quiz: [
+          { q: "Have you ever ________ traditional Colombian dishes?", opts: ["eaten", "ate", "eat"], ans: 0 }
         ]
       },
       "comparatives": {
         name: "Comparatives & Superlatives",
+        definition: "Comparatives contrast two elements (faster than, more beautiful than). Superlatives identify the extreme quality within a group (the fastest, the most beautiful).",
+        defEs: "Los comparativos contrastan dos elementos. Los superlativos identifican la cualidad máxima dentro de un grupo.",
         table: [
-          { c1: "Fast", c2: "Faster than", c3: "The fastest" },
-          { c1: "Big", c2: "Bigger than", c3: "The biggest" },
-          { c1: "Tall", c2: "Taller than", c3: "The tallest" },
-          { c1: "Heavy", c2: "Heavier than", c3: "The heaviest" },
-          { c1: "Hot", c2: "Hotter than", c3: "The hottest" },
-          { c1: "Cold", c2: "Colder than", c3: "The coldest" },
-          { c1: "Intelligent", c2: "More intelligent than", c3: "The most intelligent" },
-          { c1: "Strong", c2: "Stronger than", c3: "The strongest" },
-          { c1: "Good", c2: "Better than", c3: "The best" },
-          { c1: "Bad", c2: "Worse than", c3: "The worst" }
+          { c1: "Fast ➔ Faster than", c2: "The fastest", c3: "Más rápido que / El más rápido" },
+          { c1: "Big ➔ Bigger than", c2: "The biggest", c3: "Más grande que / El más grande" },
+          { c1: "Tall ➔ Taller than", c2: "The tallest", c3: "Más alto que / El más alto" },
+          { c1: "Intelligent ➔ More int...", c2: "The most intelligent", c3: "Más inteligente / El más int..." },
+          { c1: "Good ➔ Better than", c2: "The best", c3: "Mejor que / El mejor (Irregular)" },
+          { c1: "Bad ➔ Worse than", c2: "The worst", c3: "Peor que / El peor (Irregular)" },
+          { c1: "Hot ➔ Hotter than", c2: "The hottest", c3: "Más caliente / El más caliente" },
+          { c1: "Cold ➔ Colder than", c2: "The coldest", c3: "Más frío / El más frío" },
+          { c1: "Heavy ➔ Heavier than", c2: "The heaviest", c3: "Más pesado / El más pesado" },
+          { c1: "Far ➔ Farther than", c2: "The farthest", c3: "Más lejos / El más lejano" }
         ],
         flashcards: [
-          { en: "Faster", es: "Más rápido", img: "https://images.unsplash.com/photo-1534188753412-3e26d0d618d6?w=200&q=60" },
-          { en: "Tallest", es: "El más alto", img: "https://images.unsplash.com/photo-1547721064-da6cfb341d50?w=200&q=60" }
+          { symbol: "🐆", en: "Faster than", es: "Más rápido que" },
+          { symbol: "🏔️", en: "The highest", es: "El más alto" }
         ],
         quiz: [
-          { q: "The cheetah is ________ than the turtle.", opts: ["faster", "fastest", "more fast"], ans: 0 },
-          { q: "Blue whales are the ________ animals on Earth.", opts: ["biggest", "bigger", "most big"], ans: 0 }
+          { q: "The condor is ________ than the sparrow.", opts: ["larger", "largest", "more large"], ans: 0 }
         ]
       }
     };
 
-    // 5. DETECCIÓN AUTOMÁTICA DE TEMAS
-    let pendingTheme = "";
+    // 6. BUSCADOR EN EL PANEL LATERAL
+    function buildThemeList() {
+      const container = document.getElementById('themeListContainer');
+      container.innerHTML = "";
+      for (let key in masterCurriculum) {
+        const btn = document.createElement('button');
+        btn.className = 'topic-list-btn';
+        btn.innerText = masterCurriculum[key].name;
+        btn.onclick = () => triggerManualTheme(key);
+        container.appendChild(btn);
+      }
+    }
+    buildThemeList();
+
+    function filterThemeList() {
+      const query = document.getElementById('themeSearchBox').value.toLowerCase();
+      const buttons = document.querySelectorAll('.topic-list-btn');
+      buttons.forEach(btn => {
+        const txt = btn.innerText.toLowerCase();
+        btn.style.display = txt.includes(query) ? "block" : "none";
+      });
+    }
+
+    // 7. DETECCIÓN AUTOMÁTICA Y CARGA DE DEFINICIÓN
+    let pendingThemeKey = "";
     let debounceTimer;
     const writingSurface = document.getElementById('writingSurface');
 
     writingSurface.addEventListener('input', () => {
       clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(scanBoardForThemes, 500);
+      debounceTimer = setTimeout(scanBoardContent, 600);
     });
 
-    function scanBoardForThemes() {
+    function scanBoardContent() {
       const text = writingSurface.innerText.toLowerCase();
-      for (let key in curriculumDB) {
+      for (let key in masterCurriculum) {
         if (text.includes(key)) {
-          pendingTheme = key;
+          pendingThemeKey = key;
           document.getElementById('themePromptText').innerText = 
-            `Detectado el tema "${curriculumDB[key].name}". ¿Deseas sincronizar los otros tableros con este contenido?`;
+            `Detectado tema: "${masterCurriculum[key].name}". ¿Sincronizar y cargar definición en el tablero?`;
           document.getElementById('themePromptBar').style.display = 'flex';
           break;
         }
@@ -617,29 +809,39 @@
 
     function confirmThemeSync(doSync) {
       document.getElementById('themePromptBar').style.display = 'none';
-      if (doSync && pendingTheme) {
-        loadCurriculumData(pendingTheme);
+      if (doSync && pendingThemeKey) {
+        loadCurricularTheme(pendingThemeKey);
       }
     }
 
     function triggerManualTheme(key) {
-      pendingTheme = key;
-      loadCurriculumData(key);
+      pendingThemeKey = key;
+      loadCurricularTheme(key);
     }
 
-    function loadCurriculumData(key) {
-      const data = curriculumDB[key];
+    function loadCurricularTheme(key) {
+      const data = masterCurriculum[key];
       if (!data) return;
 
       document.getElementById('activeThemeBadge').innerText = data.name;
-      logAction(`Contenido sincronizado: ${data.name}`);
 
-      // Generar Vista de Gráficos (10 Ítems + Flashcards)
+      // 7.1 Insertar Definición Automática en el Tablero Principal
+      const defHtml = `
+        <div class="theme-definition-box" contenteditable="false">
+          <strong>📖 Grammar & Vocabulary Focus: ${data.name}</strong>
+          <p style="margin:4px 0 0 0;">${data.definition}</p>
+          <small>${data.defEs}</small>
+        </div><p><br></p>
+      `;
+      writingSurface.focus();
+      document.execCommand('insertHTML', false, defHtml);
+
+      // 7.2 Renderizar Gráficos (10 Ítems + Flashcards)
       document.getElementById('graphicsTitle').innerText = `Recursos: ${data.name}`;
-      let rows = data.table.map(item => `<tr><td><strong>${item.c1}</strong></td><td>${item.c2}</td><td>${item.c3}</td></tr>`).join('');
+      let rows = data.table.map(i => `<tr><td><strong>${i.c1}</strong></td><td>${i.c2}</td><td>${i.c3}</td></tr>`).join('');
       let cards = data.flashcards.map(fc => `
         <div class="flashcard" onclick="speakText('${fc.en}')">
-          <img src="${fc.img}" alt="${fc.en}">
+          <div class="symbol">${fc.symbol}</div>
           <strong>${fc.en}</strong>
           <span>${fc.es}</span>
           <button style="font-size:0.7rem; padding:2px 6px;">🔊 Listen</button>
@@ -647,18 +849,18 @@
       `).join('');
 
       document.getElementById('graphicsContentArea').innerHTML = `
-        <h4 style="color:#1e3a8a; margin:8px 0;">1. Tabla Curricular (10 Ítems):</h4>
+        <h4 style="color:#1e3a8a; margin:8px 0;">1. Tabla Curricular Completa (10 Ítems):</h4>
         <table class="curriculum-table">
-          <thead><tr><th>Base / Infinitivo</th><th>Forma Gramatical / Fonética</th><th>Traducción / Función</th></tr></thead>
+          <thead><tr><th>Término / Infinitivo</th><th>Estructura / Categoría</th><th>Traducción / Significado</th></tr></thead>
           <tbody>${rows}</tbody>
         </table>
-        <h4 style="color:#1e3a8a; margin:14px 0 6px 0;">2. Flashcards Interactivas:</h4>
+        <h4 style="color:#1e3a8a; margin:14px 0 6px 0;">2. Flashcards Interactivas (Sin carga externa):</h4>
         <div class="flashcards-container">${cards}</div>
       `;
 
-      // Generar Vista de Quiz
+      // 7.3 Renderizar Quiz
       document.getElementById('quizTitle').innerText = `Quiz: ${data.name}`;
-      let quizHtml = data.quiz.map((q, idx) => {
+      let qHtml = data.quiz.map((q, idx) => {
         if (q.type === 'speaking') {
           return `
             <div style="background:#f1f5f9; padding:10px; border-radius:6px; margin-bottom:10px;">
@@ -676,45 +878,36 @@
         `;
       }).join('');
 
-      quizHtml += `<button style="background:var(--primary); color:white; font-weight:bold; padding:8px 16px;" onclick="gradeQuiz('${key}')">Evaluar Quiz</button>
-                   <div id="quizScoreOut" style="margin-top:8px; font-weight:bold;"></div>`;
-      document.getElementById('quizContentArea').innerHTML = quizHtml;
+      qHtml += `<button style="background:var(--primary); color:white; font-weight:bold; padding:8px 16px;" onclick="gradeQuiz('${key}')">Evaluar Quiz</button>
+                <div id="quizScoreOut" style="margin-top:8px; font-weight:bold;"></div>`;
+      document.getElementById('quizContentArea').innerHTML = qHtml;
     }
 
-    // 6. BUSCADOR MULTIMEDIA
-    function searchAndEmbedMedia() {
+    // 8. RECURSOS YOUTUBE
+    function embedYouTubeResource() {
       const q = document.getElementById('mediaSearchInput').value.trim();
       if (!q) return;
 
-      const container = document.getElementById('graphicsContentArea');
-      const id = "media_" + Date.now();
+      let videoId = "";
+      if (q.includes("watch?v=")) videoId = q.split("watch?v=")[1].split("&")[0];
+      else if (q.includes("youtu.be/")) videoId = q.split("youtu.be/")[1].split("?")[0];
 
-      if (q.includes("youtube.com/watch?v=") || q.includes("youtu.be/")) {
-        let videoId = "";
-        if (q.includes("watch?v=")) videoId = q.split("watch?v=")[1].split("&")[0];
-        else if (q.includes("youtu.be/")) videoId = q.split("youtu.be/")[1].split("?")[0];
-
+      if (videoId) {
+        const id = "yt_" + Date.now();
         const embedHtml = `
           <div class="board-item-wrapper" id="${id}" style="width:100%; margin:12px 0;">
-            <button class="btn-delete-item" onclick="removeBoardItem('${id}')">×</button>
+            <button class="btn-delete-node" onclick="document.getElementById('${id}').remove()">×</button>
             <iframe width="100%" height="280" src="https://www.youtube.com/embed/${videoId}" frameborder="0" allowfullscreen style="border-radius:8px;"></iframe>
           </div>
         `;
-        container.insertAdjacentHTML('afterbegin', embedHtml);
+        document.getElementById('graphicsContentArea').insertAdjacentHTML('afterbegin', embedHtml);
       } else {
-        const imgHtml = `
-          <div class="board-item-wrapper" id="${id}" style="margin:10px 0;">
-            <button class="btn-delete-item" onclick="removeBoardItem('${id}')">×</button>
-            <img src="https://images.unsplash.com/photo-1546182990-dffeafbe841d?w=400&q=70" style="max-width:260px; border-radius:8px; display:block;" alt="${q}">
-            <span style="font-size:0.75rem; color:#64748b;">Visual: ${q}</span>
-          </div>
-        `;
-        container.insertAdjacentHTML('afterbegin', imgHtml);
+        alert("Pega un enlace válido de YouTube para incrustar el reproductor.");
       }
       document.getElementById('mediaSearchInput').value = "";
     }
 
-    // 7. WENDY (IA)
+    // 9. WENDY (IA CON DETECCIÓN DE INTENCIÓN)
     function handleWendyInput() {
       const input = document.getElementById('aiInput');
       const text = input.value.trim();
@@ -737,20 +930,20 @@
       let response = "";
 
       if (lower.includes("practice") || lower.includes("practicar") || lower.includes("ejercicio")) {
-        intent = "Solicitud de Práctica";
-        response = `I see you want to practice! For ${grade}th grade (${cefr}), we can practice Past Simple, Animals, or Comparatives. Which one do you prefer?`;
-      } else if (lower.includes("how do you say") || lower.includes("cómo se dice") || lower.includes("significa") || lower.includes("translate")) {
-        intent = "Consulta de Vocabulario / Traducción";
-        response = `Good question! In ${cefr} level, remember to focus on how words are used in real sentences. What specific word are you wondering about?`;
-      } else if (lower.includes("hello") || lower.includes("hi") || lower.includes("wendy") || lower.includes("buenos días")) {
+        intent = "Petición de Práctica";
+        response = `Great! For ${grade}th grade (${cefr}), we can explore Animals of Colombia, Past Simple, or Routines. Which one do you prefer?`;
+      } else if (lower.includes("how do you say") || lower.includes("cómo se dice") || lower.includes("translate")) {
+        intent = "Consulta de Traducción / Vocabulario";
+        response = `Language Tip: Always connect words to full sentences. What word or expression do you want to explore?`;
+      } else if (lower.includes("hello") || lower.includes("hi") || lower.includes("wendy") || lower.includes("hola")) {
         intent = "Saludo e Interacción Social";
-        response = `Hello! It's great to talk to you. Tell me, how was your day today?`;
-      } else if (lower.includes("yesterday") || lower.includes("fui") || lower.includes("comí") || lower.includes("did") || lower.includes("went")) {
+        response = `Hello! I'm glad you are practicing English today. How are you doing?`;
+      } else if (lower.includes("yesterday") || lower.includes("fui") || lower.includes("ate") || lower.includes("went")) {
         intent = "Expresión en Pasado";
-        response = `Excellent! You are talking about past events. Notice the verb form: make sure to use irregular verbs correctly!`;
+        response = `Noticed you are talking about past events! Make sure to verify whether the verb is regular (-ed) or irregular (e.g. went, saw).`;
       } else {
-        intent = "Entrada General de Aprendizaje";
-        response = `I heard: "${userInput}". That's a great attempt for ${grade}th grade! Let's continue communicating in English.`;
+        intent = "Participación y Opinión";
+        response = `I understood: "${userInput}". Good participation! Let's continue communicating in English.`;
       }
 
       appendChatMessage(`[Intención detectada: ${intent} | Nivel adaptado: ${cefr}]`, 'feedback');
@@ -766,7 +959,7 @@
       chat.scrollTop = chat.scrollHeight;
     }
 
-    // 8. VOZ (WEB SPEECH)
+    // 10. RECONOCIMIENTO DE VOZ Y TTS
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let globalRecognizer;
     let voiceTarget = 'board';
@@ -790,12 +983,10 @@
           const surface = document.getElementById('writingSurface');
           surface.focus();
           document.execCommand('insertText', false, ' ' + text);
-          scanBoardForThemes();
+          scanBoardContent();
         } else if (voiceTarget === 'ai') {
           document.getElementById('aiInput').value = text;
           handleWendyInput();
-        } else {
-          logAction(`Voz recibida: "${text}"`);
         }
       };
 
@@ -809,7 +1000,7 @@
 
     function toggleVoice(target) {
       if (!globalRecognizer) {
-        alert("Reconocimiento de voz no soportado. Usa Chrome o Edge.");
+        alert("Reconocimiento de voz no soportado. Usa Google Chrome o Microsoft Edge.");
         return;
       }
       voiceTarget = target;
@@ -854,7 +1045,7 @@
     }
 
     function gradeQuiz(key) {
-      const data = curriculumDB[key];
+      const data = masterCurriculum[key];
       let score = 0;
       data.quiz.forEach((q, idx) => {
         if (q.ans !== undefined) {
@@ -862,10 +1053,10 @@
           if (sel && parseInt(sel.value) === q.ans) score++;
         }
       });
-      document.getElementById('quizScoreOut').innerText = `Calificación: ${score} preguntas correctas.`;
+      document.getElementById('quizScoreOut').innerText = `Resultado: ${score} respuestas correctas.`;
     }
 
-    // 9. NAVEGACIÓN ENTRE TABLEROS
+    // 11. MODOS Y EXPORTACIÓN
     function switchMode(mode, btnEl) {
       document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
       btnEl.classList.add('active');
@@ -875,15 +1066,13 @@
       document.getElementById('topToolbar').style.display = (mode === 'normal') ? 'flex' : 'none';
     }
 
-    function logAction(msg) {
-      const l = document.getElementById('logArea');
-      if (l) l.innerHTML = `• ${msg}<br>` + l.innerHTML;
+    function exportSession() {
+      const blob = new Blob([document.querySelector('.canvas-board').innerHTML], { type: 'text/html' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'Clase_EduBoard_Studio.html';
+      a.click();
     }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      setRealDate();
-      updateCurricularFilters();
-    });
   </script>
 </body>
 </html>
