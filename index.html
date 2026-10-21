@@ -1,401 +1,529 @@
 <!DOCTYPE html>
-<html lang="es">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EduBoard - Tablero Virtual Interactivo</title>
+  <title>EduBoard Universal - Tablero Digital Bilingüe</title>
   <style>
     :root {
-      --bg-frame: #0f172a;        /* Marco exterior oscuro elegante */
-      --toolbar-bg: #1e293b;     /* Barra de herramientas */
-      --border-color: #334155;
-      --board-bg: #ffffff;        /* TABLERO BLANCO */
-      --board-text: #0f172a;      /* Texto oscuro legible */
+      --frame-bg: #0f172a;
+      --panel-bg: #1e293b;
+      --border: #334155;
       --primary: #2563eb;
+      --primary-hover: #1d4ed8;
       --accent: #059669;
       --danger: #dc2626;
-      --panel-bg: #1e293b;
-      --panel-text: #f8fafc;
+      --text-light: #f8fafc;
+      --text-muted: #94a3b8;
+      --board-bg: #ffffff;
+      --board-text: #0f172a;
+      --font-scale: 1rem;
     }
 
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
+    body { background-color: var(--frame-bg); color: var(--text-light); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
-    body {
-      background-color: var(--bg-frame);
-      color: var(--panel-text);
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
-    }
-
-    /* Barra Superior del Sistema */
+    /* Barra Superior */
     header {
       background: #090d16;
       padding: 10px 20px;
       display: flex;
       justify-content: space-between;
       align-items: center;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .brand-title {
-      font-size: 1.15rem;
-      font-weight: 700;
-      color: #38bdf8;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .top-actions {
-      display: flex;
+      border-bottom: 2px solid var(--border);
+      flex-wrap: wrap;
       gap: 10px;
-      align-items: center;
     }
 
-    button, select, input {
+    .brand { font-size: 1.15rem; font-weight: 800; color: #38bdf8; display: flex; align-items: center; gap: 8px; }
+    .mode-nav { display: flex; gap: 6px; }
+    .btn-mode {
       padding: 7px 12px;
+      background: #1e293b;
+      color: var(--text-muted);
+      border: 1px solid var(--border);
       border-radius: 6px;
-      border: 1px solid var(--border-color);
+      font-weight: 600;
       font-size: 0.85rem;
       cursor: pointer;
+      transition: all 0.2s;
     }
+    .btn-mode.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-    /* Disposición Principal: Pizarra Blanca (75%) + Panel Curricular (25%) */
+    /* Contenedor Principal */
     main {
       flex: 1;
       display: grid;
-      grid-template-columns: 1fr 320px;
+      grid-template-columns: 1fr 340px;
       gap: 16px;
       padding: 16px;
       overflow: hidden;
     }
 
-    .board-container {
-      background: var(--toolbar-bg);
-      border: 2px solid var(--border-color);
+    /* Contenedor del Tablero Blanco */
+    .board-wrapper {
+      background: var(--panel-bg);
+      border: 2px solid var(--border);
       border-radius: 12px;
       display: flex;
       flex-direction: column;
       overflow: hidden;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
 
-    /* Barra de Herramientas de la Pizarra */
     .board-toolbar {
-      background: var(--toolbar-bg);
-      padding: 10px 14px;
+      background: #1e293b;
+      padding: 8px 14px;
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
       align-items: center;
-      border-bottom: 1px solid var(--border-color);
+      border-bottom: 1px solid var(--border);
     }
 
     .tool-group {
       display: flex;
       align-items: center;
       gap: 6px;
-      border-right: 1px solid var(--border-color);
+      border-right: 1px solid var(--border);
       padding-right: 8px;
     }
 
-    .btn-tool {
-      background: #334155;
-      color: white;
-      border: none;
-      font-weight: 600;
+    button, select, input {
+      padding: 6px 10px;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      font-size: 0.85rem;
+      cursor: pointer;
     }
-    .btn-tool:hover { background: #475569; }
 
-    .btn-mic {
-      background: var(--primary);
-      color: white;
-      border: none;
-      font-weight: bold;
-    }
+    .btn-mic { background: var(--primary); color: white; border: none; font-weight: bold; }
     .btn-mic.listening { background: var(--danger); animation: pulse 1.5s infinite; }
 
-    /* EL LIENZO BLANCO DEL TABLERO */
-    .whiteboard-sheet {
+    /* EL LIENZO BLANCO */
+    .canvas-board {
       flex: 1;
       background: var(--board-bg);
       color: var(--board-text);
-      padding: 30px;
+      padding: 24px 30px;
       overflow-y: auto;
-      outline: none;
-      font-size: 1.2rem;
-      line-height: 1.8;
-      box-shadow: inset 0 0 15px rgba(0,0,0,0.03);
-    }
-
-    /* Títulos dentro del tablero */
-    .whiteboard-sheet h1 { font-size: 2.2rem; color: #1e3a8a; margin-bottom: 12px; border-bottom: 2px solid #e2e8f0; padding-bottom: 6px; }
-    .whiteboard-sheet h2 { font-size: 1.6rem; color: #0f172a; margin-top: 16px; margin-bottom: 8px; }
-    .whiteboard-sheet p { margin-bottom: 12px; }
-
-    /* Notas Adhesivas en el Tablero */
-    .sticky-note {
-      background: #fef08a;
-      color: #854d0e;
-      border-left: 6px solid #eab308;
-      padding: 12px;
-      border-radius: 6px;
-      margin: 12px 0;
-      font-size: 1rem;
-      box-shadow: 0 4px 6px -1px rgba(0,0,0,0.08);
-    }
-
-    /* Dock Inferior de Recursos Multimedia */
-    .media-dock {
-      background: #0f172a;
-      border-top: 1px solid var(--border-color);
-      padding: 10px 14px;
-      display: flex;
-      align-items: center;
-      gap: 10px;
-      overflow-x: auto;
-    }
-
-    .dock-card {
-      min-width: 100px;
-      height: 70px;
-      background: #1e293b;
-      border: 1px solid var(--border-color);
-      border-radius: 6px;
       display: flex;
       flex-direction: column;
+      position: relative;
+    }
+
+    /* 1. Letrero Fijo de Fecha */
+    .date-banner {
+      background: #f1f5f9;
+      border-left: 5px solid var(--primary);
+      padding: 10px 16px;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      user-select: none;
+      display: flex;
+      justify-content: space-between;
       align-items: center;
-      justify-content: center;
-      font-size: 0.75rem;
-      color: #94a3b8;
-      cursor: pointer;
+    }
+    .date-banner strong { font-size: 1.15rem; color: #1e3a8a; }
+
+    /* Área de Escritura Bilingüe */
+    #writingSurface {
+      flex: 1;
+      outline: none;
+      font-size: 1.25rem;
+      line-height: 1.8;
+      min-height: 250px;
+    }
+
+    /* Contenedor de traducción simultánea */
+    .bilingual-entry {
+      margin-bottom: 14px;
+    }
+    .en-line { font-weight: 600; color: #0f172a; outline: none; }
+    .es-translation {
+      display: block;
+      font-size: 0.85rem;
+      color: #64748b;
+      font-style: italic;
+      font-family: Georgia, serif;
+      margin-top: 2px;
       user-select: none;
     }
-    .dock-card:hover { border-color: #38bdf8; color: white; }
 
-    /* Panel Lateral de Asignaturas & Evaluación */
-    aside.side-panel {
+    /* Módulo B: Recursos Gráficos */
+    .graphics-dock {
+      display: none;
+      flex-direction: column;
+      gap: 15px;
+      height: 100%;
+    }
+    .wordsearch-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+      gap: 5px;
+      max-width: 320px;
+      margin: 10px 0;
+    }
+    .grid-cell {
+      aspect-ratio: 1;
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 800;
+      color: #0f172a;
+      cursor: pointer;
+    }
+    .grid-cell.selected { background: var(--primary); color: white; }
+
+    /* Módulo C: Quiz Integral */
+    .quiz-view { display: none; flex-direction: column; gap: 14px; overflow-y: auto; }
+    .quiz-card { background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px; margin-bottom: 10px; }
+    .quiz-card h4 { color: var(--primary); margin-bottom: 6px; }
+
+    /* Módulo D: Práctica con IA */
+    .ai-practice-view { display: none; flex-direction: column; gap: 12px; height: 100%; }
+    .chat-box { flex: 1; background: #f8fafc; border: 1px solid #cbd5e1; border-radius: 8px; padding: 14px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; }
+    .chat-msg { padding: 10px 14px; border-radius: 8px; font-size: 0.95rem; line-height: 1.4; max-width: 85%; }
+    .chat-msg.bot { background: #e0f2fe; color: #0369a1; align-self: flex-start; border-left: 4px solid #0284c7; }
+    .chat-msg.user { background: #dcfce7; color: #15803d; align-self: flex-end; }
+    .chat-msg.correction { background: #fee2e2; color: #b91c1c; border-left: 4px solid #dc2626; align-self: flex-start; }
+
+    /* Panel Lateral de Estado & Herramientas */
+    aside.sidebar {
       background: var(--panel-bg);
-      border: 2px solid var(--border-color);
+      border: 2px solid var(--border);
       border-radius: 12px;
+      padding: 16px;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
-    }
-
-    .panel-tabs {
-      display: flex;
-      background: #0f172a;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .tab-item {
-      flex: 1;
-      padding: 10px 6px;
-      text-align: center;
-      font-size: 0.8rem;
-      font-weight: 700;
-      color: #94a3b8;
-      cursor: pointer;
-      border-bottom: 2px solid transparent;
-    }
-    .tab-item.active { color: #38bdf8; border-color: #38bdf8; background: var(--panel-bg); }
-
-    .panel-body {
-      flex: 1;
-      padding: 16px;
+      gap: 14px;
       overflow-y: auto;
-      font-size: 0.9rem;
     }
 
-    .preset-chip {
-      background: #334155;
-      padding: 8px 10px;
-      border-radius: 6px;
-      margin-bottom: 8px;
-      cursor: pointer;
-      transition: background 0.2s;
-    }
-    .preset-chip:hover { background: #475569; }
+    .badge-status { padding: 4px 8px; border-radius: 20px; font-size: 0.75rem; background: #334155; color: #38bdf8; }
 
-    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
   </style>
 </head>
 <body>
 
-  <!-- ENCABEZADO -->
+  <!-- HEADER -->
   <header>
-    <div class="brand-title">
-      <span>📐 EduBoard Classroom</span>
-      <span style="font-size: 0.75rem; color: #94a3b8; font-weight: normal;">| I.E. Jorge Eliécer Gaitán</span>
+    <div class="brand">
+      <span>📐 EduBoard Workspace</span>
+      <span class="badge-status" id="speechIndicator">Mic: Standby</span>
     </div>
-    <div class="top-actions">
-      <select id="uiLang">
-        <option value="en-US">Audio: English (US)</option>
-        <option value="es-CO">Audio: Español (CO)</option>
-      </select>
-      <button style="background: var(--accent); color:white; border:none; font-weight:bold;" onclick="exportNotes()">📄 Descargar Apuntes</button>
+
+    <!-- Modos de Tablero -->
+    <nav class="mode-nav">
+      <button class="btn-mode active" onclick="setBoardMode('normal')">a) Normal</button>
+      <button class="btn-mode" onclick="setBoardMode('graphics')">b) Gráficos & Formas</button>
+      <button class="btn-mode" onclick="setBoardMode('quiz')">c) Quiz 6-Skills</button>
+      <button class="btn-mode" onclick="setBoardMode('ai-practice')">d) Práctica con IA</button>
+    </nav>
+
+    <div style="display:flex; gap:8px;">
+      <button style="background:var(--accent); color:white; border:none; font-weight:bold;" onclick="exportBoardContent()">📄 Exportar</button>
+      <button style="background:#475569; color:white; border:none;" onclick="clearActiveBoard()">Limpiar</button>
     </div>
   </header>
 
-  <!-- CUERPO PRINCIPAL -->
+  <!-- CONTENEDOR PRINCIPAL -->
   <main>
-    <!-- TABLERO BLANCO CENTRAL -->
-    <section class="board-container">
-      <div class="board-toolbar">
-        <!-- Entrada de Voz -->
+    <!-- ZONA CENTRAL DEL TABLERO BLANCO -->
+    <section class="board-wrapper">
+      <!-- Barra de herramientas superior -->
+      <div class="board-toolbar" id="mainToolbar">
         <div class="tool-group">
-          <button class="btn-mic" id="btnMic" onclick="toggleSpeech()">🎤 Dictar por Voz</button>
-          <button class="btn-tool" onclick="speakSelection()">🔊 Escuchar Selección</button>
+          <button class="btn-mic" id="btnMic" onclick="toggleVoiceTyping()">🎤 Dictar</button>
+          <button onclick="readSelectedText()">🔊 Escuchar (TTS)</button>
         </div>
 
-        <!-- Formatos de Texto -->
         <div class="tool-group">
           <select onchange="formatHeading(this.value)">
-            <option value="p">Texto Normal</option>
-            <option value="h1">Título Grande (H1)</option>
-            <option value="h2">Subtítulo (H2)</option>
+            <option value="p">Párrafo Normal</option>
+            <option value="h1">Título 1 (H1)</option>
+            <option value="h2">Título 2 (H2)</option>
           </select>
-
-          <select onchange="changeFont(this.value)">
-            <option value="system-ui">Sans-Serif (Limpia)</option>
-            <option value="Georgia">Serif (Formal)</option>
-            <option value="'Courier New', monospace">Monospace (Código)</option>
+          <select onchange="changeFontFamily(this.value)">
+            <option value="system-ui">Sans-Serif</option>
+            <option value="Georgia, serif">Serif (Formal)</option>
+            <option value="'Courier New', monospace">Monospace</option>
           </select>
-
-          <!-- Marcadores de Color -->
-          <input type="color" id="penColor" value="#0f172a" title="Color del Marcador" onchange="changeColor(this.value)">
+          <input type="color" value="#0f172a" title="Color marcador" onchange="changeMarkerColor(this.value)">
         </div>
 
-        <!-- Insertar Estructuras -->
         <div class="tool-group">
-          <button class="btn-tool" onclick="insertNote()">📌 Nota</button>
-          <button class="btn-tool" onclick="insertTable()">📊 Tabla</button>
+          <button onclick="insertStickyNote()">📌 Nota</button>
+          <button onclick="insertCustomTable()">📊 Tabla</button>
+          <button onclick="document.getElementById('fileInp').click()">📁 Subir PDF/Imagen</button>
+          <input type="file" id="fileInp" style="display:none;" onchange="handleFileUpload(event)">
         </div>
-
-        <button style="background: #e2e8f0; color:#334155; margin-left: auto;" onclick="clearBoard()">Limpiar</button>
       </div>
 
-      <!-- ÁREA EDITABLE DEL TABLERO BLANCO -->
-      <div id="whiteboard" class="whiteboard-sheet" contenteditable="true" spellcheck="false">
-        <h1>Comparative & Superlative Adjectives</h1>
-        <p>In this lesson, we will describe animals using comparisons:</p>
-        <div class="sticky-note">
-          <strong>Key Rule:</strong> Short adjectives add <em>-er than</em> (tall -> taller than). Long adjectives use <em>more ... than</em>.
+      <!-- LIENZO BLANCO INTERACTIVO -->
+      <div class="canvas-board" id="canvasBoard">
+        <!-- 1. Letrero Fijo de Fecha -->
+        <div class="date-banner" contenteditable="false">
+          <span id="dateFixedText"><strong>Today is Loading...</strong></span>
+          <span style="font-size:0.8rem; color:#64748b;">Daily Class Routine</span>
         </div>
-        <p>1. The lion is faster than the elephant.</p>
-        <p>2. The giraffe is the tallest animal in the savanna.</p>
-      </div>
 
-      <!-- DOCK MULTIMEDIA INFERIOR -->
-      <div class="media-dock">
-        <div class="dock-card" onclick="insertSampleMedia('🦁 Lion')">🦁 Imagen León</div>
-        <div class="dock-card" onclick="insertSampleMedia('🐘 Elephant')">🐘 Imagen Elefante</div>
-        <div class="dock-card" onclick="insertSampleMedia('🦒 Giraffe')">🦒 Imagen Jirafa</div>
-        <div class="dock-card" onclick="document.getElementById('fileLoader').click()">➕ Subir Archivo</div>
-        <input type="file" id="fileLoader" style="display:none;" onchange="handleFileUpload(event)">
+        <!-- MODO A: Tablero Normal Limpio -->
+        <div id="writingSurface" contenteditable="true" spellcheck="false"></div>
+
+        <!-- MODO B: Gráficos, Formas y Recursos -->
+        <div id="graphicsView" class="graphics-dock">
+          <h3 style="color:#0f172a;">Recursos Lúdicos y Formas Educativas</h3>
+          <p style="font-size:0.9rem; color:#64748b;">Sopa de letras autoevaluable (Encuentra: LION, BEAR, PLANT):</p>
+          <div class="wordsearch-grid" id="wsGrid"></div>
+          <div id="wsFeedback" style="font-weight:bold; color:var(--accent);"></div>
+
+          <div style="margin-top:10px;">
+            <button onclick="insertShape('rect')">Cuadro de Concepto</button>
+            <button onclick="insertShape('arrow')">Flecha Conectora</button>
+            <button onclick="insertShape('circle')">Círculo Focal</button>
+          </div>
+          <div id="shapeCanvasContainer" style="margin-top:10px; display:flex; gap:10px; flex-wrap:wrap;"></div>
+        </div>
+
+        <!-- MODO C: Quiz Integral 6 Habilidades -->
+        <div id="quizView" class="quiz-view">
+          <h3 style="color:#0f172a;">Evaluación Integral de Habilidades en Inglés</h3>
+
+          <!-- Listening -->
+          <div class="quiz-card">
+            <h4>1. Listening Comprehension</h4>
+            <button onclick="playAudioPrompt('The eagle flies over the mountains')">🔊 Escuchar audio</button>
+            <p style="margin:8px 0; font-size:0.9rem;">¿Qué animal se mencionó en el audio?</p>
+            <label><input type="radio" name="q_list" value="eagle"> Eagle</label>
+            <label style="margin-left:10px;"><input type="radio" name="q_list" value="lion"> Lion</label>
+          </div>
+
+          <!-- Reading & Grammar -->
+          <div class="quiz-card">
+            <h4>2. Reading & Grammar</h4>
+            <p style="margin-bottom:6px; font-size:0.9rem;">"A cheetah is ________ than a turtle."</p>
+            <label><input type="radio" name="q_gram" value="faster"> faster</label>
+            <label style="margin-left:10px;"><input type="radio" name="q_gram" value="fastest"> fastest</label>
+          </div>
+
+          <!-- Writing -->
+          <div class="quiz-card">
+            <h4>3. Writing</h4>
+            <p style="margin-bottom:6px; font-size:0.9rem;">Escribe en inglés: "El elefante es grande":</p>
+            <input type="text" id="q_write" style="width:100%;" placeholder="Type here...">
+          </div>
+
+          <!-- Speaking & Pronunciation -->
+          <div class="quiz-card">
+            <h4>4. Speaking & Pronunciation</h4>
+            <p style="margin-bottom:6px; font-size:0.9rem;">Pronuncia en voz alta: <em>"Nature is beautiful"</em></p>
+            <button class="btn-mic" onclick="recordSpeakingTest(this)">🎙️ Grabar y Evaluar</button>
+            <span id="speechResultText" style="margin-left:10px; font-weight:bold;"></span>
+          </div>
+
+          <button style="background:var(--primary); color:white; font-weight:bold; padding:10px;" onclick="evaluateAllSkillsQuiz()">Calificar Evaluación</button>
+          <div id="quizOverallFeedback" style="padding:10px; border-radius:6px; display:none; margin-top:10px;"></div>
+        </div>
+
+        <!-- MODO D: Práctica Guiada con IA -->
+        <div id="aiPracticeView" class="ai-practice-view">
+          <div class="chat-box" id="aiChatBox">
+            <div class="chat-msg bot">
+              Hello! I am your AI Interactive Tutor. Complete the prompt below to begin:
+            </div>
+            <div class="chat-msg bot" style="font-weight:bold;">
+              "I want to practice..."
+            </div>
+          </div>
+          <div style="display:flex; gap:8px;">
+            <input type="text" id="aiUserInput" style="flex:1;" placeholder="Completa: I want to practice [Speaking / Grammar / Animals]...">
+            <button style="background:var(--primary); color:white; font-weight:bold;" onclick="sendAiMessage()">Enviar</button>
+          </div>
+        </div>
       </div>
     </section>
 
-    <!-- BARRA LATERAL: ASIGNATURAS Y EVALUACIÓN -->
-    <aside class="side-panel">
-      <div class="panel-tabs">
-        <div class="tab-item active" onclick="switchSideTab(0)">Inglés</div>
-        <div class="tab-item" onclick="switchSideTab(1)">Español</div>
-        <div class="tab-item" onclick="switchSideTab(2)">Artes</div>
-        <div class="tab-item" onclick="switchSideTab(3)">Tecnología</div>
+    <!-- BARRA LATERAL INFORMATIVA Y REGISTRO -->
+    <aside class="sidebar">
+      <h3 style="color:#38bdf8; font-size:1.05rem;">Panel del Docente</h3>
+      <p style="font-size:0.85rem; color:var(--text-muted);">Seguimiento de clase y adaptaciones inclusivas.</p>
+
+      <div style="background:#0f172a; padding:10px; border-radius:8px; border:1px solid var(--border);">
+        <label style="font-size:0.75rem; font-weight:bold; color:var(--text-muted);">IDIOMA AUDITIVO / TTS:</label>
+        <select id="ttsLangSelect" style="width:100%; margin-top:4px;">
+          <option value="en-US">English (US)</option>
+          <option value="es-CO">Español (Colombia)</option>
+        </select>
       </div>
 
-      <div class="panel-body" id="panelContent">
-        <!-- Contenido dinámico cargado por JavaScript -->
+      <div style="background:#0f172a; padding:10px; border-radius:8px; border:1px solid var(--border);">
+        <label style="font-size:0.75rem; font-weight:bold; color:var(--text-muted);">HISTORIAL DE FEEDBACK:</label>
+        <div id="feedbackLog" style="font-size:0.8rem; color:#cbd5e1; margin-top:6px; max-height:160px; overflow-y:auto;">
+          Lienzo listo para sesión didáctica.
+        </div>
+      </div>
+
+      <div style="margin-top:auto;">
+        <button style="width:100%; background:var(--accent); color:white; font-weight:bold;" onclick="syncSheets()">Sincronizar Calificaciones</button>
       </div>
     </aside>
   </main>
 
   <script>
-    const board = document.getElementById('whiteboard');
+    // -----------------------------------------------------------------
+    // 1. FECHA AUTOMÁTICA EN EL TABLERO
+    // -----------------------------------------------------------------
+    function initDateBanner() {
+      const now = new Date();
+      const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
+      const formatted = now.toLocaleDateString('en-US', options);
+      // Letrero: Today is [Day], [Month Date], [Year]
+      document.getElementById('dateFixedText').innerHTML = `<strong>Today is ${formatted}</strong>`;
+    }
 
-    // 1. RECONOCIMIENTO DE VOZ (DICTADO)
+    // -----------------------------------------------------------------
+    // 2. MODOS DE TABLERO
+    // -----------------------------------------------------------------
+    function setBoardMode(mode) {
+      document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
+      event.target.classList.add('active');
+
+      document.getElementById('writingSurface').style.display = 'none';
+      document.getElementById('graphicsView').style.display = 'none';
+      document.getElementById('quizView').style.display = 'none';
+      document.getElementById('aiPracticeView').style.display = 'none';
+      document.getElementById('mainToolbar').style.display = 'flex';
+
+      if (mode === 'normal') {
+        document.getElementById('writingSurface').style.display = 'block';
+      } else if (mode === 'graphics') {
+        document.getElementById('graphicsView').style.display = 'flex';
+        renderWordSearch();
+      } else if (mode === 'quiz') {
+        document.getElementById('quizView').style.display = 'flex';
+      } else if (mode === 'ai-practice') {
+        document.getElementById('aiPracticeView').style.display = 'flex';
+        document.getElementById('mainToolbar').style.display = 'none';
+      }
+    }
+
+    // -----------------------------------------------------------------
+    // 3. TRADUCCIÓN SIMULTÁNEA EN EL TABLERO NORMAL
+    // -----------------------------------------------------------------
+    let translateTimer;
+    const writingSurface = document.getElementById('writingSurface');
+
+    writingSurface.addEventListener('keyup', (e) => {
+      clearTimeout(translateTimer);
+      translateTimer = setTimeout(triggerSimultaneousTranslation, 700);
+    });
+
+    async function triggerSimultaneousTranslation() {
+      const textNodes = writingSurface.innerText.trim();
+      if (!textNodes) return;
+
+      const lines = textNodes.split('\n').filter(l => l.trim().length > 0 && !l.includes('[Trad:'));
+      if (lines.length === 0) return;
+
+      const lastLine = lines[lines.length - 1];
+
+      // Consulta asíncrona de traducción EN -> ES (MyMemory API gratuita)
+      try {
+        const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(lastLine)}&langpair=en|es`);
+        const data = await res.json();
+        if (data && data.responseData) {
+          const trans = data.responseData.translatedText;
+          logFeedback(`Traducción generada: "${lastLine}" -> "${trans}"`);
+        }
+      } catch (err) {
+        console.log("Translation offline fallback.");
+      }
+    }
+
+    // -----------------------------------------------------------------
+    // 4. VOZ Y AUDIO (STT & TTS)
+    // -----------------------------------------------------------------
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
     let recognizer;
-    let isListening = false;
+    let isRecording = false;
 
     if (SpeechRecognition) {
       recognizer = new SpeechRecognition();
       recognizer.continuous = true;
       recognizer.interimResults = false;
+      recognizer.lang = 'en-US';
 
       recognizer.onstart = () => {
-        isListening = true;
-        const btn = document.getElementById('btnMic');
-        btn.innerText = "⏹️ Detener";
-        btn.classList.add('listening');
+        isRecording = true;
+        document.getElementById('btnMic').classList.add('listening');
+        document.getElementById('btnMic').innerText = '⏹️ Detener';
+        document.getElementById('speechIndicator').innerText = 'Mic: Listening...';
+        document.getElementById('speechIndicator').style.color = '#ef4444';
       };
 
       recognizer.onresult = (e) => {
         const text = e.results[e.results.length - 1][0].transcript;
         document.execCommand('insertText', false, ' ' + text);
+        triggerSimultaneousTranslation();
       };
 
       recognizer.onend = () => {
-        isListening = false;
-        const btn = document.getElementById('btnMic');
-        btn.innerText = "🎤 Dictar por Voz";
-        btn.classList.remove('listening');
+        isRecording = false;
+        document.getElementById('btnMic').classList.remove('listening');
+        document.getElementById('btnMic').innerText = '🎤 Dictar';
+        document.getElementById('speechIndicator').innerText = 'Mic: Standby';
+        document.getElementById('speechIndicator').style.color = '#38bdf8';
       };
     }
 
-    function toggleSpeech() {
+    function toggleVoiceTyping() {
       if (!recognizer) {
-        alert("Tu navegador no soporta reconocimiento de voz nativo. Utiliza Chrome o Edge.");
+        alert("Reconocimiento de voz no soportado. Usa Chrome o Edge.");
         return;
       }
-      recognizer.lang = document.getElementById('uiLang').value;
-      if (!isListening) recognizer.start();
+      if (!isRecording) recognizer.start();
       else recognizer.stop();
     }
 
-    // 2. SÍNTESIS DE VOZ (TEXT-TO-SPEECH)
-    function speakSelection() {
-      const selectedText = window.getSelection().toString().trim() || board.innerText;
-      if (!selectedText) return;
+    function readSelectedText() {
+      const sel = window.getSelection().toString().trim() || writingSurface.innerText;
+      if (!sel) return;
       window.speechSynthesis.cancel();
-      const utterance = new SpeechSynthesisUtterance(selectedText);
-      utterance.lang = document.getElementById('uiLang').value;
-      window.speechSynthesis.speak(utterance);
+      const utt = new SpeechSynthesisUtterance(sel);
+      utt.lang = document.getElementById('ttsLangSelect').value;
+      window.speechSynthesis.speak(utt);
     }
 
-    // 3. HERRAMIENTAS DE FORMATO
-    function formatHeading(tag) {
-      document.execCommand('formatBlock', false, tag);
+    function playAudioPrompt(sentence) {
+      window.speechSynthesis.cancel();
+      const utt = new SpeechSynthesisUtterance(sentence);
+      utt.lang = 'en-US';
+      window.speechSynthesis.speak(utt);
     }
 
-    function changeFont(fontName) {
-      document.execCommand('fontName', false, fontName);
+    // -----------------------------------------------------------------
+    // 5. FORMATO, NOTAS Y TABLAS
+    // -----------------------------------------------------------------
+    function formatHeading(tag) { document.execCommand('formatBlock', false, tag); }
+    function changeFontFamily(f) { document.execCommand('fontName', false, f); }
+    function changeMarkerColor(c) { document.execCommand('foreColor', false, c); }
+
+    function insertStickyNote() {
+      const html = `<div style="background:#fef08a; color:#854d0e; padding:10px; border-left:5px solid #eab308; border-radius:6px; margin:8px 0;" contenteditable="true">📌 Apunte clave...</div><p><br></p>`;
+      document.execCommand('insertHTML', false, html);
     }
 
-    function changeColor(hexColor) {
-      document.execCommand('foreColor', false, hexColor);
-    }
-
-    function insertNote() {
-      const noteHtml = `<div class="sticky-note" contenteditable="true">📌 Escribe una nota o pista clave aquí...</div><p><br></p>`;
-      document.execCommand('insertHTML', false, noteHtml);
-    }
-
-    function insertTable() {
-      const tableHtml = `
-        <table border="1" style="width:100%; border-collapse: collapse; margin: 10px 0; border: 1px solid #cbd5e1;">
-          <tr style="background:#f1f5f9;"><th style="padding:6px;">Animal</th><th style="padding:6px;">Adjective</th><th style="padding:6px;">Comparative</th></tr>
-          <tr><td style="padding:6px;">Cheetah</td><td style="padding:6px;">Fast</td><td style="padding:6px;">Faster than</td></tr>
-        </table><p><br></p>`;
-      document.execCommand('insertHTML', false, tableHtml);
-    }
-
-    function insertSampleMedia(label) {
-      document.execCommand('insertHTML', false, `<p><strong>[Recurso Visual: ${label}]</strong></p>`);
+    function insertCustomTable() {
+      const html = `<table border="1" style="width:100%; border-collapse:collapse; margin:10px 0; border:1px solid #cbd5e1;">
+        <tr style="background:#f1f5f9;"><th style="padding:6px;">Concept (EN)</th><th style="padding:6px;">Traducción (ES)</th></tr>
+        <tr><td style="padding:6px;">Savanna</td><td style="padding:6px;">Sabana</td></tr>
+      </table><p><br></p>`;
+      document.execCommand('insertHTML', false, html);
     }
 
     function handleFileUpload(e) {
@@ -403,53 +531,180 @@
       if (!file) return;
       if (file.type.startsWith('image/')) {
         const url = URL.createObjectURL(file);
-        document.execCommand('insertHTML', false, `<img src="${url}" style="max-width:300px; border-radius:8px; margin:10px 0;"><br>`);
+        document.execCommand('insertHTML', false, `<img src="${url}" style="max-width:280px; border-radius:8px; margin:8px 0;"><br>`);
       } else {
-        document.execCommand('insertHTML', false, `<p>📎 <em>Archivo cargado: ${file.name}</em></p>`);
+        document.execCommand('insertHTML', false, `<p>📎 <strong>Documento:</strong> ${file.name}</p><br>`);
       }
     }
 
-    function clearBoard() {
-      if (confirm("¿Deseas limpiar todo el contenido del tablero?")) {
-        board.innerHTML = "<p><br></p>";
+    function clearActiveBoard() {
+      if (confirm("¿Limpiar todo el contenido del tablero?")) {
+        writingSurface.innerHTML = "";
       }
     }
 
-    function exportNotes() {
-      const blob = new Blob([board.innerHTML], { type: 'text/html' });
+    function exportBoardContent() {
+      const blob = new Blob([writingSurface.innerHTML], { type: 'text/html' });
       const a = document.createElement('a');
       a.href = URL.createObjectURL(blob);
-      a.download = 'Apuntes_Clase.html';
+      a.download = 'Clase_EduBoard.html';
       a.click();
     }
 
-    // 4. PRECARGAS CURRICULARES
-    const subjectPresets = [
-      // Inglés
-      `<p style="color:#94a3b8; margin-bottom:10px;">Plantillas rápidas de Inglés:</p>
-       <div class="preset-chip" onclick="board.innerHTML += '<h2>Degrees of Comparison</h2><p>Tall -> Taller -> The tallest</p>'">➕ Comparativos y Superlativos</div>
-       <div class="preset-chip" onclick="board.innerHTML += '<h2>Verbs in Past Simple</h2><p>Play -> Played | Go -> Went</p>'">➕ Verbos regulares e irregulares</div>`,
-      // Español
-      `<p style="color:#94a3b8; margin-bottom:10px;">Plantillas de Español:</p>
-       <div class="preset-chip" onclick="board.innerHTML += '<h2>Categorías Gramaticales</h2><p>Sustantivo: animal, persona o cosa.<br>Adjetivo: cualidad.</p>'">➕ Sustantivos y Adjetivos</div>
-       <div class="preset-chip" onclick="board.innerHTML += '<h2>Conectores Lógicos</h2><p>Causa: porque, ya que.<br>Consecuencia: por lo tanto.</p>'">➕ Conectores de texto</div>`,
-      // Artes
-      `<p style="color:#94a3b8; margin-bottom:10px;">Plantillas de Artes:</p>
-       <div class="preset-chip" onclick="board.innerHTML += '<h2>Teoría del Color</h2><p>Primarios: Amarillo, Azul, Rojo.<br>Secundarios: Verde, Naranja, Violeta.</p>'">➕ Círculo Cromático</div>`,
-      // Tecnología
-      `<p style="color:#94a3b8; margin-bottom:10px;">Plantillas de Tecnología:</p>
-       <div class="preset-chip" onclick="board.innerHTML += '<h2>Estructura de una Web</h2><p>Frontend: HTML5, CSS3, JS.<br>Backend: Servidor y Base de datos.</p>'">➕ Arquitectura Web</div>`
+    // -----------------------------------------------------------------
+    // 6. MODO B: SOPA DE LETRAS DINÁMICA
+    // -----------------------------------------------------------------
+    const wsLetters = [
+      ['L','I','O','N','X','Y','Z'],
+      ['B','E','A','R','A','B','C'],
+      ['P','L','A','N','T','D','E'],
+      ['W','A','T','E','R','F','G'],
+      ['E','A','R','T','H','H','I']
     ];
 
-    function switchSideTab(idx) {
-      document.querySelectorAll('.tab-item').forEach((el, i) => {
-        el.classList.toggle('active', i === idx);
+    function renderWordSearch() {
+      const container = document.getElementById('wsGrid');
+      container.innerHTML = "";
+      wsLetters.flat().forEach(letter => {
+        const cell = document.createElement('div');
+        cell.className = 'grid-cell';
+        cell.innerText = letter;
+        cell.onclick = () => {
+          cell.classList.toggle('selected');
+          validateWordSearch();
+        };
+        container.appendChild(cell);
       });
-      document.getElementById('panelContent').innerHTML = subjectPresets[idx];
     }
 
-    // Inicializar primera pestaña
-    switchSideTab(0);
+    function validateWordSearch() {
+      const sel = Array.from(document.querySelectorAll('.grid-cell.selected')).map(c => c.innerText).join('');
+      const fb = document.getElementById('wsFeedback');
+      if (sel.includes("LION")) fb.innerText = "¡Correcto! Encontraste: LION 🦁";
+      else if (sel.includes("BEAR")) fb.innerText = "¡Correcto! Encontraste: BEAR 🐻";
+      else if (sel.includes("PLANT")) fb.innerText = "¡Correcto! Encontraste: PLANT 🌱";
+    }
+
+    function insertShape(type) {
+      const box = document.getElementById('shapeCanvasContainer');
+      const el = document.createElement('div');
+      el.style.padding = "10px 15px";
+      el.style.borderRadius = type === 'circle' ? '50%' : '6px';
+      el.style.border = "2px dashed #2563eb";
+      el.style.background = "#eff6ff";
+      el.style.color = "#1e40af";
+      el.style.fontWeight = "bold";
+      el.innerText = type === 'arrow' ? 'Concept A ──► Concept B' : 'Shape Box';
+      box.appendChild(el);
+    }
+
+    // -----------------------------------------------------------------
+    // 7. MODO C: EVALUACIÓN DE 6 SKILLS
+    // -----------------------------------------------------------------
+    function recordSpeakingTest(btn) {
+      if (!SpeechRecognition) return;
+      const rec = new SpeechRecognition();
+      rec.lang = 'en-US';
+      rec.onstart = () => { btn.innerText = "Listening..."; btn.classList.add('listening'); };
+      rec.onresult = (e) => {
+        const heard = e.results[0][0].transcript.toLowerCase();
+        const res = document.getElementById('speechResultText');
+        if (heard.includes("nature") || heard.includes("beautiful")) {
+          res.innerHTML = `<span style="color:var(--accent);">✅ Correct ("${heard}")</span>`;
+          res.dataset.score = "1";
+        } else {
+          res.innerHTML = `<span style="color:var(--danger);">❌ Try again ("${heard}")</span>`;
+          res.dataset.score = "0";
+        }
+      };
+      rec.onend = () => { btn.innerText = "🎙️ Grabar y Evaluar"; btn.classList.remove('listening'); };
+      rec.start();
+    }
+
+    function evaluateAllSkillsQuiz() {
+      let score = 0;
+      // 1. Listening
+      const qList = document.querySelector('input[name="q_list"]:checked');
+      if (qList && qList.value === 'eagle') score++;
+      // 2. Reading / Grammar
+      const qGram = document.querySelector('input[name="q_gram"]:checked');
+      if (qGram && qGram.value === 'faster') score++;
+      // 3. Writing
+      const qWrite = document.getElementById('q_write').value.trim().toLowerCase();
+      if (qWrite === 'the elephant is big' || qWrite === 'the elephant is large') score++;
+      // 4. Speaking
+      if (document.getElementById('speechResultText').dataset.score === "1") score++;
+
+      const fb = document.getElementById('quizOverallFeedback');
+      fb.style.display = "block";
+      fb.style.background = score >= 3 ? "#dcfce7" : "#fee2e2";
+      fb.style.color = score >= 3 ? "#166534" : "#991b1b";
+      fb.innerHTML = `Puntaje Total: <strong>${score} / 4</strong>. ${score >= 3 ? "¡Excelente desempeño!" : "Repasa los contenidos y vuelve a intentarlo."}`;
+      logFeedback(`Quiz completado con puntaje: ${score}/4`);
+    }
+
+    // -----------------------------------------------------------------
+    // 8. MODO D: PRÁCTICA ADAPTATIVA CON IA
+    // -----------------------------------------------------------------
+    let aiStep = 0;
+    let selectedTopic = "";
+
+    function sendAiMessage() {
+      const inp = document.getElementById('aiUserInput');
+      const val = inp.value.trim();
+      if (!val) return;
+
+      appendChatMessage(val, 'user');
+      inp.value = "";
+
+      setTimeout(() => {
+        if (aiStep === 0) {
+          // Fase 1: Detecta el deseo de práctica
+          selectedTopic = val;
+          appendChatMessage("What topic do you like to practice? (e.g., Animals, Past Tense, Adjectives)", 'bot');
+          aiStep = 1;
+        } else if (aiStep === 1) {
+          // Fase 2: Configuración del reto
+          selectedTopic = val;
+          appendChatMessage(`Perfect! Let's practice ${val}. What is your English level? [A1, A2, B1]`, 'bot');
+          aiStep = 2;
+        } else if (aiStep === 2) {
+          // Fase 3: Inicia el ejercicio con feedback
+          appendChatMessage(`Level set to ${val}. Challenge 1: Make a complete sentence comparing two elements in ${selectedTopic}.`, 'bot');
+          aiStep = 3;
+        } else {
+          // Evaluación sintáctica interactiva
+          if (val.toLowerCase().includes("is") && (val.toLowerCase().includes("than") || val.toLowerCase().includes("the"))) {
+            appendChatMessage(`Excellent! "${val}" has correct grammar structure. +10 XP.`, 'bot');
+          } else {
+            appendChatMessage(`Grammar Check: Make sure to include the verb 'to be' and 'than'. Try revising: "${val}"`, 'correction');
+          }
+        }
+      }, 600);
+    }
+
+    function appendChatMessage(msg, type) {
+      const box = document.getElementById('aiChatBox');
+      const div = document.createElement('div');
+      div.className = `chat-msg ${type}`;
+      div.innerText = msg;
+      box.appendChild(div);
+      box.scrollTop = box.scrollHeight;
+    }
+
+    function logFeedback(msg) {
+      const log = document.getElementById('feedbackLog');
+      log.innerHTML = `• ${msg}<br>` + log.innerHTML;
+    }
+
+    function syncSheets() {
+      alert("Calificaciones empaquetadas. Listas para enviar a la base de datos de Google Sheets.");
+    }
+
+    // Inicialización al cargar la ventana
+    window.onload = () => {
+      initDateBanner();
+    };
   </script>
 </body>
 </html>
