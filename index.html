@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>EduBoard Studio - Interactive Teaching Suite</title>
+  <title>EduBoard Universal Suite - Smart Interactive Whiteboard</title>
   <style>
     :root {
       --frame-bg: #0f172a;
@@ -22,9 +22,10 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; }
     body { background-color: var(--frame-bg); color: var(--text-light); display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
 
+    /* Barra Superior */
     header {
       background: #090d16;
-      padding: 10px 20px;
+      padding: 8px 16px;
       display: flex;
       justify-content: space-between;
       align-items: center;
@@ -33,21 +34,21 @@
       gap: 10px;
     }
 
-    .brand { font-size: 1.15rem; font-weight: 800; color: #38bdf8; display: flex; align-items: center; gap: 8px; }
-    .mode-nav { display: flex; gap: 6px; }
+    .brand { font-size: 1.1rem; font-weight: 800; color: #38bdf8; display: flex; align-items: center; gap: 8px; }
+    .mode-nav { display: flex; gap: 5px; }
     .btn-mode {
-      padding: 7px 12px;
+      padding: 6px 12px;
       background: #1e293b;
       color: var(--text-muted);
       border: 1px solid var(--border);
       border-radius: 6px;
       font-weight: 600;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       cursor: pointer;
     }
     .btn-mode.active { background: var(--primary); color: white; border-color: var(--primary); }
 
-    /* Alerta de Detección de Temas */
+    /* Barra de Notificación / Confirmación de Temas */
     .theme-prompt-bar {
       background: #1e3a8a;
       color: #eff6ff;
@@ -62,12 +63,13 @@
     .btn-yes { background: var(--accent); color: white; }
     .btn-no { background: #64748b; color: white; }
 
+    /* Estructura Principal */
     main {
       flex: 1;
       display: grid;
       grid-template-columns: 1fr 340px;
-      gap: 16px;
-      padding: 16px;
+      gap: 14px;
+      padding: 14px;
       overflow: hidden;
     }
 
@@ -81,12 +83,13 @@
       box-shadow: 0 10px 25px rgba(0,0,0,0.5);
     }
 
+    /* Barra de Herramientas del Tablero */
     .board-toolbar {
       background: #1e293b;
-      padding: 8px 14px;
+      padding: 8px 12px;
       display: flex;
       flex-wrap: wrap;
-      gap: 8px;
+      gap: 6px;
       align-items: center;
       border-bottom: 1px solid var(--border);
     }
@@ -94,40 +97,40 @@
     .tool-group {
       display: flex;
       align-items: center;
-      gap: 6px;
+      gap: 4px;
       border-right: 1px solid var(--border);
-      padding-right: 8px;
+      padding-right: 6px;
     }
 
     button, select, input {
       padding: 6px 10px;
       border-radius: 6px;
       border: 1px solid var(--border);
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       cursor: pointer;
     }
 
     .btn-mic { background: var(--primary); color: white; border: none; font-weight: bold; }
     .btn-mic.listening { background: var(--danger); animation: pulse 1.5s infinite; }
 
-    /* LIENZO BLANCO UNIVERSAL */
+    /* LIENZO BLANCO INTERACTIVO */
     .canvas-board {
       flex: 1;
       background: var(--board-bg);
       color: var(--board-text);
-      padding: 24px 30px;
+      padding: 20px 26px;
       overflow-y: auto;
       display: flex;
       flex-direction: column;
       position: relative;
     }
 
-    /* 1. Letrero Fijo de Fecha en Todos los Tableros */
+    /* 1. Letrero Fijo de Fecha */
     .date-banner-fixed {
       background: #f1f5f9;
       border-left: 5px solid var(--primary);
       padding: 10px 16px;
-      margin-bottom: 18px;
+      margin-bottom: 16px;
       border-radius: 6px;
       user-select: none;
       display: flex;
@@ -136,7 +139,7 @@
     }
     .date-banner-fixed strong { font-size: 1.15rem; color: #1e3a8a; }
 
-    /* Contenido Tablero Principal */
+    /* Área de Escritura */
     #writingSurface {
       flex: 1;
       outline: none;
@@ -145,32 +148,93 @@
       min-height: 250px;
     }
 
-    /* Figuras Editables */
-    .editable-shape {
+    /* ELEMENTOS EDITABLES CON BORRADO INDIVIDUAL */
+    .board-item-wrapper {
+      position: relative;
       display: inline-block;
-      margin: 10px;
+      margin: 8px 0;
+      max-width: 100%;
+    }
+    .btn-delete-item {
+      position: absolute;
+      top: -8px;
+      right: -8px;
+      background: #ef4444;
+      color: white;
+      border: none;
+      border-radius: 50%;
+      width: 22px;
+      height: 22px;
+      font-size: 12px;
+      font-weight: bold;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+      z-index: 10;
+    }
+    .btn-delete-item:hover { background: #b91c1c; }
+
+    .editable-shape {
       padding: 12px 18px;
       min-width: 140px;
       text-align: center;
       font-weight: bold;
       outline: none;
-      cursor: move;
+      display: block;
     }
     .shape-box { border: 2px solid var(--primary); background: #eff6ff; color: #1e40af; border-radius: 6px; }
     .shape-circle { border: 2px solid var(--accent); background: #ecfdf5; color: #065f46; border-radius: 50px; }
     .shape-arrow { background: #fef3c7; color: #92400e; border: 2px dashed #f59e0b; border-radius: 6px; }
 
+    .sticky-note {
+      background: #fef08a;
+      color: #854d0e;
+      padding: 12px;
+      border-left: 6px solid #eab308;
+      border-radius: 6px;
+      font-size: 1rem;
+      display: block;
+    }
+
     /* Tablas Didácticas */
-    .grammar-table {
+    .curriculum-table {
       width: 100%;
       border-collapse: collapse;
-      margin: 14px 0;
+      margin: 10px 0;
       border: 1px solid #cbd5e1;
+      font-size: 0.95rem;
     }
-    .grammar-table th { background: #f1f5f9; padding: 8px; text-align: left; color: #1e293b; border: 1px solid #cbd5e1; }
-    .grammar-table td { padding: 8px; border: 1px solid #cbd5e1; color: #334155; }
+    .curriculum-table th { background: #f1f5f9; padding: 8px; text-align: left; border: 1px solid #cbd5e1; color:#0f172a; }
+    .curriculum-table td { padding: 8px; border: 1px solid #cbd5e1; color:#334155; }
 
-    /* Modos B, C, D */
+    /* Flashcards de Vocabulario con Flip */
+    .flashcards-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(135px, 1fr));
+      gap: 12px;
+      margin: 12px 0;
+    }
+    .flashcard {
+      background: #f8fafc;
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 8px;
+      text-align: center;
+      cursor: pointer;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .flashcard:hover { transform: translateY(-3px); box-shadow: 0 4px 10px rgba(0,0,0,0.08); }
+    .flashcard img { width: 100%; height: 75px; object-fit: cover; border-radius: 6px; }
+    .flashcard strong { font-size: 0.85rem; color: #0f172a; }
+    .flashcard span { font-size: 0.75rem; color: #64748b; font-style: italic; }
+
+    /* Vistas de los Modos */
     .view-container { display: none; flex-direction: column; gap: 14px; height: 100%; }
     .active-view { display: flex; }
 
@@ -179,9 +243,9 @@
     .chat-msg { padding: 10px 14px; border-radius: 8px; font-size: 0.95rem; line-height: 1.4; max-width: 85%; }
     .chat-msg.bot { background: #e0f2fe; color: #0369a1; align-self: flex-start; border-left: 4px solid #0284c7; }
     .chat-msg.user { background: #dcfce7; color: #15803d; align-self: flex-end; }
-    .chat-msg.correction { background: #fee2e2; color: #b91c1c; border-left: 4px solid #dc2626; align-self: flex-start; }
+    .chat-msg.intent { background: #fef3c7; color: #92400e; font-size: 0.8rem; border-left: 4px solid #f59e0b; align-self: flex-start; }
 
-    /* Panel Lateral */
+    /* Barra Lateral */
     aside.sidebar {
       background: var(--panel-bg);
       border: 2px solid var(--border);
@@ -189,7 +253,7 @@
       padding: 16px;
       display: flex;
       flex-direction: column;
-      gap: 14px;
+      gap: 12px;
       overflow-y: auto;
     }
 
@@ -198,45 +262,53 @@
 </head>
 <body>
 
-  <!-- BARRA SUPERIOR -->
+  <!-- ENCABEZADO -->
   <header>
     <div class="brand">
-      <span>📐 EduBoard Studio</span>
-      <span style="font-size:0.75rem; color:#94a3b8; font-weight:normal;" id="speechState">Mic: Standby</span>
+      <span>📐 EduBoard Studio Pro</span>
+      <span style="font-size:0.75rem; color:#94a3b8;" id="speechStatus">Mic: Standby</span>
     </div>
 
     <nav class="mode-nav">
       <button class="btn-mode active" onclick="switchMode('normal')">Tablero Principal</button>
-      <button class="btn-mode" onclick="switchMode('graphics')">Gráficos & Recursos</button>
-      <button class="btn-mode" onclick="switchMode('quiz')">Quiz de Práctica</button>
+      <button class="btn-mode" onclick="switchMode('graphics')">Gráficos & Flashcards</button>
+      <button class="btn-mode" onclick="switchMode('quiz')">Quiz Integral</button>
       <button class="btn-mode" onclick="switchMode('ai')">Práctica con IA</button>
     </nav>
 
     <div style="display:flex; gap:8px;">
       <button style="background:var(--accent); color:white; border:none; font-weight:bold;" onclick="exportSession()">📄 Exportar</button>
-      <button style="background:#475569; color:white; border:none;" onclick="clearCurrentBoard()">Limpiar</button>
+      <button style="background:#475569; color:white; border:none;" onclick="clearWritingOnly()">Limpiar Texto</button>
     </div>
   </header>
 
   <!-- BARRA DE CONFIRMACIÓN DE DETECCIÓN DE TEMA -->
   <div class="theme-prompt-bar" id="themePromptBar">
-    <span id="themePromptText">Detectado el tema "Past Simple". ¿Deseas sincronizar los otros tableros con este contenido?</span>
+    <span id="themePromptText">Detectado un tema de clase. ¿Deseas sincronizar los otros tableros con este contenido?</span>
     <div>
       <button class="btn-yes" onclick="applyThemeDetection(true)">Sí, sincronizar</button>
       <button class="btn-no" onclick="applyThemeDetection(false)">No</button>
     </div>
   </div>
 
-  <!-- ZONA DE TRABAJO -->
   <main>
     <section class="board-container">
-      <!-- Barra de herramientas para el tablero -->
+      <!-- BARRA DE HERRAMIENTAS PRINCIPAL -->
       <div class="board-toolbar" id="topToolbar">
+        <!-- Entrada de Voz y Lectura -->
         <div class="tool-group">
-          <button class="btn-mic" id="mainMicBtn" onclick="toggleVoice('board')">🎤 Dictar por Voz</button>
+          <button class="btn-mic" id="mainMicBtn" onclick="toggleVoice('board')">🎤 Dictar</button>
           <button onclick="readAloud()">🔊 Escuchar (TTS)</button>
         </div>
 
+        <!-- Alineación de Texto -->
+        <div class="tool-group">
+          <button title="Alinear a la Izquierda" onclick="alignText('justifyLeft')">⬅️</button>
+          <button title="Centrar" onclick="alignText('justifyCenter')">↔️</button>
+          <button title="Alinear a la Derecha" onclick="alignText('justifyRight')">➡️</button>
+        </div>
+
+        <!-- Formato y Fuentes -->
         <div class="tool-group">
           <select onchange="document.execCommand('formatBlock', false, this.value)">
             <option value="p">Párrafo Normal</option>
@@ -248,21 +320,21 @@
             <option value="Georgia">Serif</option>
             <option value="'Courier New', monospace">Monospace</option>
           </select>
-          <input type="color" value="#0f172a" title="Color de Marcador" onchange="document.execCommand('foreColor', false, this.value)">
+          <input type="color" value="#0f172a" title="Color" onchange="document.execCommand('foreColor', false, this.value)">
         </div>
 
-        <!-- Figuras y Formas en el Tablero Principal -->
+        <!-- Figuras y Formas -->
         <div class="tool-group">
-          <button onclick="addEditableShape('box')">🔲 Cuadro</button>
-          <button onclick="addEditableShape('circle')">⚪ Círculo</button>
-          <button onclick="addEditableShape('arrow')">➡️ Flecha</button>
-          <button onclick="addStickyNote()">📌 Nota</button>
+          <button onclick="insertDeletableShape('box')">🔲 Cuadro</button>
+          <button onclick="insertDeletableShape('circle')">⚪ Círculo</button>
+          <button onclick="insertDeletableShape('arrow')">➡️ Flecha</button>
+          <button onclick="insertDeletableSticky()">📌 Nota</button>
         </div>
       </div>
 
-      <!-- LIENZO BLANCO INTERACTIVO -->
+      <!-- ÁREA DEL TABLERO BLANCO -->
       <div class="canvas-board">
-        <!-- 1. Letrero de Fecha Fijo -->
+        <!-- 1. Letrero de Fecha Fijo en Todos los Tableros -->
         <div class="date-banner-fixed" contenteditable="false">
           <span id="globalDateText"><strong>Today is Loading...</strong></span>
           <span style="font-size:0.8rem; color:#64748b;">Daily Class Routine</span>
@@ -270,45 +342,51 @@
 
         <!-- VISTA A: Tablero Principal (Limpio) -->
         <div id="view-normal" class="view-container active-view" style="flex:1;">
-          <div id="writingSurface" contenteditable="true" spellcheck="false" placeholder="Empieza a escribir o dictar..."></div>
+          <div id="writingSurface" contenteditable="true" spellcheck="false" placeholder="Escribe o dicta aquí tu lección..."></div>
         </div>
 
-        <!-- VISTA B: Gráficos, Formas y Tablas Curriculares -->
+        <!-- VISTA B: Gráficos, Flashcards y Recursos Multimedia -->
         <div id="view-graphics" class="view-container">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3 style="color:#0f172a;" id="graphicsTitle">Recursos Educativos y Gramaticales</h3>
-            <button class="btn-mic" onclick="toggleVoice('graphics')">🎤 Voz en Gráficos</button>
+          <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:8px;">
+            <h3 style="color:#0f172a;" id="graphicsTitle">Gráficos, Tablas & Flashcards de Vocabulario</h3>
+            <button class="btn-mic" onclick="toggleVoice('graphics')">🎤 Comando en Recursos</button>
           </div>
-          <p style="font-size:0.85rem; color:#64748b;">Contenido autogenerado según el tema activo en clase:</p>
+
+          <!-- Buscador de Multimedia (YouTube / Imágenes) -->
+          <div style="background:#f1f5f9; padding:10px; border-radius:8px; border:1px solid #cbd5e1; display:flex; gap:8px;">
+            <input type="text" id="mediaSearchInput" style="flex:1;" placeholder="Buscar imagen o pegar link de YouTube (ej. https://www.youtube.com/watch?v=...)">
+            <button style="background:var(--primary); color:white; font-weight:bold;" onclick="searchAndEmbedMedia()">Buscar / Insertar</button>
+          </div>
+
           <div id="graphicsContentArea" style="flex:1; overflow-y:auto;">
-            <p style="color:#94a3b8; font-style:italic;">Escribe un tema en el tablero principal (ej. "past simple" o "present simple") para cargar tablas y esquemas.</p>
+            <p style="color:#94a3b8; font-style:italic;">El contenido temático (tablas de 10 ítems y flashcards con imágenes) se generará al escribir un tema en el tablero principal.</p>
           </div>
         </div>
 
-        <!-- VISTA C: Quiz de Práctica -->
+        <!-- VISTA C: Quiz Integral de Práctica -->
         <div id="view-quiz" class="view-container">
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3 style="color:#0f172a;" id="quizTitle">Quiz de Práctica</h3>
-            <button class="btn-mic" onclick="toggleVoice('quiz')">🎤 Voz en Quiz</button>
+            <h3 style="color:#0f172a;" id="quizTitle">Quiz de Práctica Autoevaluable</h3>
+            <button class="btn-mic" onclick="toggleVoice('quiz')">🎤 Respuesta Oral</button>
           </div>
           <div id="quizContentArea" style="flex:1; overflow-y:auto;">
-            <p style="color:#94a3b8; font-style:italic;">El quiz se generará automáticamente cuando definas el tema de la lección.</p>
+            <p style="color:#94a3b8; font-style:italic;">Escribe un tema en el tablero para cargar el quiz de 10 preguntas adaptadas.</p>
           </div>
         </div>
 
-        <!-- VISTA D: Práctica Guiada con IA -->
+        <!-- VISTA D: Práctica con IA (Reconocimiento de Intención) -->
         <div id="view-ai" class="view-container">
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3 style="color:#0f172a;">Interactive AI Language Tutor</h3>
-            <button class="btn-mic" id="aiMicBtn" onclick="toggleVoice('ai')">🎤 Dictar Respuesta</button>
+            <h3 style="color:#0f172a;">AI Conversational & Intent Coach</h3>
+            <button class="btn-mic" id="aiMicBtn" onclick="toggleVoice('ai')">🎤 Hablar al Tutor</button>
           </div>
           <div class="chat-box" id="aiChat">
-            <div class="chat-msg bot">Hello! I am your AI practice coach. Start by completing:</div>
-            <div class="chat-msg bot" style="font-weight:bold;">"I want to practice..."</div>
+            <div class="chat-msg bot">Hello! I can understand what you want to communicate, whether in English or Spanish. Say or type something to start!</div>
+            <div class="chat-msg bot" style="font-weight:bold;">Example: "I want to practice...", "Quiero aprender los animales", "How do I say 'casa' in English?"</div>
           </div>
           <div style="display:flex; gap:8px;">
-            <input type="text" id="aiInput" style="flex:1;" placeholder="Type or use microphone...">
-            <button style="background:var(--primary); color:white; font-weight:bold;" onclick="processAiInput()">Enviar</button>
+            <input type="text" id="aiInput" style="flex:1;" placeholder="Escribe o presiona el micrófono para hablar...">
+            <button style="background:var(--primary); color:white; font-weight:bold;" onclick="handleAiSubmission()">Enviar</button>
           </div>
         </div>
       </div>
@@ -316,411 +394,7 @@
 
     <!-- PANEL LATERAL DOCENTE -->
     <aside class="sidebar">
-      <h3 style="color:#38bdf8; font-size:1.05rem;">Panel Curricular Activo</h3>
-      <div style="background:#0f172a; padding:10px; border-radius:8px; border:1px solid var(--border);">
-        <label style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">TEMA DETECTADO:</label>
-        <p id="activeThemeBadge" style="color:#38bdf8; font-weight:bold; margin-top:4px;">Ninguno (Lienzo Libre)</p>
-      </div>
+      <h3 style="color:#38bdf8; font-size:1.05rem;">Catálogo Curricular (MCER)</h3>
 
       <div style="background:#0f172a; padding:10px; border-radius:8px; border:1px solid var(--border);">
-        <label style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">TEMAS RÁPIDOS (DICCIONARIO):</label>
-        <div style="display:flex; flex-direction:column; gap:6px; margin-top:6px;">
-          <button onclick="manualSetTheme('past simple')">Past Simple (Verbs & Regulars)</button>
-          <button onclick="manualSetTheme('present simple')">Present Simple (Habits & Routines)</button>
-          <button onclick="manualSetTheme('comparatives')">Comparatives & Superlatives</button>
-        </div>
-      </div>
-
-      <div style="background:#0f172a; padding:10px; border-radius:8px; border:1px solid var(--border); flex:1; overflow-y:auto;">
-        <label style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">HISTORIAL / APUNTES:</label>
-        <div id="logArea" style="font-size:0.8rem; color:#cbd5e1; margin-top:6px;">Sistema listo.</div>
-      </div>
-    </aside>
-  </main>
-
-  <script>
-    // -------------------------------------------------------------
-    // 1. FECHA AUTOMÁTICA FIJA EN EL ENCABEZADO
-    // -------------------------------------------------------------
-    function renderGlobalDate() {
-      const today = new Date();
-      const options = { weekday: 'long', month: 'long', day: 'numeric', year: 'numeric' };
-      const formatted = today.toLocaleDateString('en-US', options);
-      // Letrero requerido: Today is [Day], [Month Date], [Year]
-      document.getElementById('globalDateText').innerHTML = `<strong>Today is ${formatted}</strong>`;
-    }
-
-    // -------------------------------------------------------------
-    // 2. DICCIONARIO TEMÁTICO CURRICULAR (INGLÉS / CIENCIAS / LENGUAJE)
-    // -------------------------------------------------------------
-    const curriculumData = {
-      "past simple": {
-        name: "Past Simple",
-        tableHtml: `
-          <table class="grammar-table">
-            <thead>
-              <tr><th>Infinitive (Present)</th><th>Past Simple</th><th>Traducción (ES)</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Play</td><td><strong>Played</strong></td><td>Jugar / Jugó</td></tr>
-              <tr><td>Go</td><td><strong>Went</strong></td><td>Ir / Fue</td></tr>
-              <tr><td>Eat</td><td><strong>Ate</strong></td><td>Comer / Comió</td></tr>
-              <tr><td>See</td><td><strong>Saw</strong></td><td>Ver / Vio</td></tr>
-              <tr><td>Study</td><td><strong>Studied</strong></td><td>Estudiar / Estudió</td></tr>
-            </tbody>
-          </table>
-          <p style="font-size:0.85rem; color:#475569;"><strong>Grammar Rule:</strong> Regular verbs add <em>-ed</em>. Irregular verbs change form completely.</p>
-        `,
-        quiz: [
-          { q: "Yesterday, Maria ________ to school by bus.", opts: ["go", "went", "goes"], ans: 1 },
-          { q: "What is the past form of the verb 'Eat'?", opts: ["Eated", "Ate", "Eating"], ans: 1 },
-          { q: "Speaking: Pronounce out loud: 'I visited my grandparents.'", type: "speaking", target: "visited" }
-        ],
-        aiPrompt: "Let's practice the Past Simple! Tell me one thing you did yesterday starting with 'Yesterday I...'"
-      },
-      "present simple": {
-        name: "Present Simple",
-        tableHtml: `
-          <table class="grammar-table">
-            <thead>
-              <tr><th>Subject</th><th>Verb Form</th><th>Example (Habits)</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>I / You / We / They</td><td>Base Verb</td><td>They play soccer every Saturday.</td></tr>
-              <tr><td>He / She / It</td><td>Verb + -s/-es</td><td>She reads a book every night.</td></tr>
-            </tbody>
-          </table>
-        `,
-        quiz: [
-          { q: "He ________ English every morning.", opts: ["study", "studies", "studying"], ans: 1 },
-          { q: "Do they ________ in London?", opts: ["lives", "live", "living"], ans: 1 }
-        ],
-        aiPrompt: "Present Simple practice: Tell me about your daily routine. What time do you wake up?"
-      },
-      "comparatives": {
-        name: "Comparatives & Superlatives",
-        tableHtml: `
-          <table class="grammar-table">
-            <thead>
-              <tr><th>Adjective</th><th>Comparative</th><th>Superlative</th></tr>
-            </thead>
-            <tbody>
-              <tr><td>Fast</td><td>Faster than</td><td>The fastest</td></tr>
-              <tr><td>Big</td><td>Bigger than</td><td>The biggest</td></tr>
-              <tr><td>Intelligent</td><td>More intelligent than</td><td>The most intelligent</td></tr>
-            </tbody>
-          </table>
-        `,
-        quiz: [
-          { q: "A cheetah is ________ than a horse.", opts: ["faster", "fastest", "more fast"], ans: 0 },
-          { q: "Mount Everest is the ________ mountain in the world.", opts: ["higher", "highest", "most high"], ans: 1 }
-        ],
-        aiPrompt: "Comparative challenge: Compare two animals. Example: 'The lion is stronger than the cat.'"
-      }
-    };
-
-    // -------------------------------------------------------------
-    // 3. DETECTOR DE TEMA Y TRADUCCIÓN SIMULTÁNEA
-    // -------------------------------------------------------------
-    let detectedCandidate = "";
-    let debounceTimer;
-
-    const writingSurface = document.getElementById('writingSurface');
-
-    writingSurface.addEventListener('keyup', () => {
-      clearTimeout(debounceTimer);
-      debounceTimer = setTimeout(analyzeBoardText, 700);
-    });
-
-    function analyzeBoardText() {
-      const text = writingSurface.innerText.toLowerCase();
-
-      // Chequeo en diccionario curricular
-      for (let key in curriculumData) {
-        if (text.includes(key)) {
-          detectedCandidate = key;
-          document.getElementById('themePromptText').innerText = 
-            `Se ha detectado el tema "${curriculumData[key].name}". ¿Deseas sincronizar los otros tableros con este contenido?`;
-          document.getElementById('themePromptBar').style.display = 'flex';
-          break;
-        }
-      }
-
-      // Traducción simultánea
-      translateLatestLine();
-    }
-
-    async function translateLatestLine() {
-      const fullText = writingSurface.innerText.trim();
-      if (!fullText) return;
-      const lines = fullText.split('\n').filter(l => l.trim().length > 0 && !l.includes('[ES:'));
-      if (lines.length === 0) return;
-      const target = lines[lines.length - 1];
-
-      try {
-        const res = await fetch(`https://api.mymemory.translated.net/get?q=${encodeURIComponent(target)}&langpair=en|es`);
-        const json = await res.json();
-        if (json && json.responseData) {
-          logAction(`Traducción: "${target}" ➔ "${json.responseData.translatedText}"`);
-        }
-      } catch (e) {
-        console.log("Offline mode.");
-      }
-    }
-
-    function applyThemeDetection(confirmSync) {
-      document.getElementById('themePromptBar').style.display = 'none';
-      if (confirmSync && detectedCandidate) {
-        syncTheme(detectedCandidate);
-      }
-    }
-
-    function manualSetTheme(key) {
-      detectedCandidate = key;
-      syncTheme(key);
-    }
-
-    function syncTheme(key) {
-      const data = curriculumData[key];
-      if (!data) return;
-
-      document.getElementById('activeThemeBadge').innerText = data.name;
-      logAction(`Tema activo establecido a: ${data.name}`);
-
-      // Actualizar Tablero Gráficos
-      document.getElementById('graphicsTitle').innerText = `Recursos: ${data.name}`;
-      document.getElementById('graphicsContentArea').innerHTML = data.tableHtml;
-
-      // Actualizar Tablero Quiz
-      document.getElementById('quizTitle').innerText = `Quiz de Práctica: ${data.name}`;
-      let qHtml = "";
-      data.quiz.forEach((q, idx) => {
-        if (q.type === 'speaking') {
-          qHtml += `
-            <div style="background:#f1f5f9; padding:10px; border-radius:6px; margin-bottom:10px;">
-              <strong>${idx + 1}. ${q.q}</strong><br>
-              <button class="btn-mic" style="margin-top:6px;" onclick="evalVoiceQuiz('${q.target}', this)">🎙️ Pronunciar</button>
-              <span class="quiz-spk-res" style="margin-left:10px; font-weight:bold;"></span>
-            </div>
-          `;
-        } else {
-          qHtml += `
-            <div style="background:#f1f5f9; padding:10px; border-radius:6px; margin-bottom:10px;">
-              <strong>${idx + 1}. ${q.q}</strong><br>
-              ${q.opts.map((opt, i) => `<label style="margin-right:12px;"><input type="radio" name="qz_${idx}" value="${i}"> ${opt}</label>`).join('')}
-            </div>
-          `;
-        }
-      });
-      qHtml += `<button style="background:var(--primary); color:white; font-weight:bold; padding:8px 16px;" onclick="checkThemeQuiz('${key}')">Evaluar Respuestas</button>
-                <div id="quizResultMsg" style="margin-top:8px; font-weight:bold;"></div>`;
-      document.getElementById('quizContentArea').innerHTML = qHtml;
-
-      // Actualizar Tablero IA
-      const chat = document.getElementById('aiChat');
-      chat.innerHTML += `
-        <div class="chat-msg bot">Topic updated to: <strong>${data.name}</strong></div>
-        <div class="chat-msg bot">${data.aiPrompt}</div>
-      `;
-      chat.scrollTop = chat.scrollHeight;
-    }
-
-    // -------------------------------------------------------------
-    // 4. RECONOCIMIENTO DE VOZ UNIVERSAL (CUALQUIER TABLERO)
-    // -------------------------------------------------------------
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    let globalRec;
-    let currentVoiceTarget = 'board';
-    let isListening = false;
-
-    if (SpeechRecognition) {
-      globalRec = new SpeechRecognition();
-      globalRec.continuous = true;
-      globalRec.interimResults = false;
-      globalRec.lang = 'en-US';
-
-      globalRec.onstart = () => {
-        isListening = true;
-        document.getElementById('speechState').innerText = "Mic: Listening...";
-        document.getElementById('speechState').style.color = "#ef4444";
-      };
-
-      globalRec.onresult = (e) => {
-        const text = e.results[e.results.length - 1][0].transcript;
-        if (currentVoiceTarget === 'board') {
-          document.execCommand('insertText', false, ' ' + text);
-          analyzeBoardText();
-        } else if (currentVoiceTarget === 'ai') {
-          document.getElementById('aiInput').value = text;
-          processAiInput();
-        } else {
-          logAction(`Voz detectada: "${text}"`);
-        }
-      };
-
-      globalRec.onend = () => {
-        isListening = false;
-        document.getElementById('speechState').innerText = "Mic: Standby";
-        document.getElementById('speechState').style.color = "#38bdf8";
-        document.querySelectorAll('.btn-mic').forEach(b => b.classList.remove('listening'));
-      };
-    }
-
-    function toggleVoice(target) {
-      if (!globalRec) {
-        alert("Reconocimiento de voz no soportado. Usa Chrome o Edge.");
-        return;
-      }
-      currentVoiceTarget = target;
-      if (!isListening) {
-        globalRec.start();
-        event.target.classList.add('listening');
-      } else {
-        globalRec.stop();
-        event.target.classList.remove('listening');
-      }
-    }
-
-    function readAloud() {
-      const sel = window.getSelection().toString().trim() || writingSurface.innerText;
-      if (!sel) return;
-      window.speechSynthesis.cancel();
-      const utt = new SpeechSynthesisUtterance(sel);
-      utt.lang = 'en-US';
-      window.speechSynthesis.speak(utt);
-    }
-
-    // -------------------------------------------------------------
-    // 5. HERRAMIENTAS Y FIGURAS EDITABLES EN EL TABLERO
-    // -------------------------------------------------------------
-    function addEditableShape(shape) {
-      let shapeHtml = '';
-      if (shape === 'box') {
-        shapeHtml = `<div class="editable-shape shape-box" contenteditable="true">Concept Box</div> &nbsp;`;
-      } else if (shape === 'circle') {
-        shapeHtml = `<div class="editable-shape shape-circle" contenteditable="true">Focal Idea</div> &nbsp;`;
-      } else if (shape === 'arrow') {
-        shapeHtml = `<div class="editable-shape shape-arrow" contenteditable="true">Cause ➔ Effect</div> &nbsp;`;
-      }
-      document.execCommand('insertHTML', false, shapeHtml);
-    }
-
-    function addStickyNote() {
-      const note = `<div style="background:#fef08a; color:#854d0e; padding:10px; border-left:5px solid #eab308; border-radius:6px; margin:8px 0;" contenteditable="true">📌 Apunte / Nota rápida...</div><p><br></p>`;
-      document.execCommand('insertHTML', false, note);
-    }
-
-    // -------------------------------------------------------------
-    // 6. PRÁCTICA DE IA (DIÁLOGO FORMATIVO)
-    // -------------------------------------------------------------
-    let aiStage = 0;
-
-    function processAiInput() {
-      const inp = document.getElementById('aiInput');
-      const val = inp.value.trim();
-      if (!val) return;
-
-      appendChat(val, 'user');
-      inp.value = "";
-
-      setTimeout(() => {
-        if (aiStage === 0) {
-          appendChat("What topic do you like to practice? (e.g. Past Simple, Present Simple, Comparatives)", 'bot');
-          aiStage = 1;
-        } else if (aiStage === 1) {
-          const match = val.toLowerCase();
-          if (match.includes("past")) {
-            syncTheme("past simple");
-          } else if (match.includes("present")) {
-            syncTheme("present simple");
-          } else {
-            syncTheme("comparatives");
-          }
-          aiStage = 2;
-        } else {
-          // Evaluación sintáctica interactiva
-          if (val.split(' ').length >= 3) {
-            appendChat(`Good sentence! Correct syntax detected for: "${val}".`, 'bot');
-          } else {
-            appendChat(`Try making a longer sentence with subject, verb, and complement.`, 'correction');
-          }
-        }
-      }, 500);
-    }
-
-    function appendChat(txt, cls) {
-      const box = document.getElementById('aiChat');
-      const div = document.createElement('div');
-      div.className = `chat-msg ${cls}`;
-      div.innerText = txt;
-      box.appendChild(div);
-      box.scrollTop = box.scrollHeight;
-    }
-
-    function evalVoiceQuiz(target, btn) {
-      if (!SpeechRecognition) return;
-      const rec = new SpeechRecognition();
-      rec.lang = 'en-US';
-      rec.onstart = () => { btn.innerText = "Listening..."; btn.classList.add('listening'); };
-      rec.onresult = (e) => {
-        const heard = e.results[0][0].transcript.toLowerCase();
-        const out = btn.nextElementSibling;
-        if (heard.includes(target.toLowerCase())) {
-          out.innerHTML = `<span style="color:var(--accent);">✅ Correct ("${heard}")</span>`;
-        } else {
-          out.innerHTML = `<span style="color:var(--danger);">❌ Repeat ("${heard}")</span>`;
-        }
-      };
-      rec.onend = () => { btn.innerText = "🎙️ Pronunciar"; btn.classList.remove('listening'); };
-      rec.start();
-    }
-
-    function checkThemeQuiz(key) {
-      const data = curriculumData[key];
-      let correct = 0;
-      data.quiz.forEach((q, idx) => {
-        if (q.ans !== undefined) {
-          const sel = document.querySelector(`input[name="qz_${idx}"]:checked`);
-          if (sel && parseInt(sel.value) === q.ans) correct++;
-        }
-      });
-      document.getElementById('quizResultMsg').innerText = `Aciertos: ${correct} de preguntas teóricas.`;
-    }
-
-    // -------------------------------------------------------------
-    // 7. GESTIÓN Y LIMPIEZA
-    // -------------------------------------------------------------
-    function switchMode(m) {
-      document.querySelectorAll('.btn-mode').forEach(b => b.classList.remove('active'));
-      event.target.classList.add('active');
-
-      document.querySelectorAll('.view-container').forEach(v => v.classList.remove('active-view'));
-      document.getElementById(`view-${m}`).classList.add('active-view');
-      document.getElementById('topToolbar').style.display = (m === 'normal') ? 'flex' : 'none';
-    }
-
-    function clearCurrentBoard() {
-      if (confirm("¿Deseas vaciar el contenido de la vista actual?")) {
-        writingSurface.innerHTML = "";
-      }
-    }
-
-    function exportSession() {
-      const blob = new Blob([writingSurface.innerHTML], { type: 'text/html' });
-      const a = document.createElement('a');
-      a.href = URL.createObjectURL(blob);
-      a.download = 'Clase_EduBoard.html';
-      a.click();
-    }
-
-    function logAction(msg) {
-      const l = document.getElementById('logArea');
-      l.innerHTML = `• ${msg}<br>` + l.innerHTML;
-    }
-
-    window.onload = () => {
-      renderGlobalDate();
-    };
-  </script>
-</body>
-</html>
+        <label style="font-size:0.75rem; color:var(--text-muted); font-weight:bold;">TEMA EN CURSO:</label
